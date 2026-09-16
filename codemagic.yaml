@@ -10,7 +10,7 @@ workflows:
         script: npm install
       - name: Build web assets
         script: npm run build
-      - name: Sync Capacitor iOS platform
+      - name: Copy and Sync Capacitor platforms
         script: npx cap sync ios
     artifacts:
       - build/ios/ipa/*.ipa
