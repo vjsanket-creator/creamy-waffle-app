@@ -12,8 +12,11 @@ workflows:
         script: npm run build
       - name: Ensure www directory exists and sync
         script: |
-          # Agar build dist me banta hai to use www me copy karne ke liye:
           if [ -d "dist" ]; then cp -r dist/* www/; fi
           npx cap sync ios
     artifacts:
       - build/ios/ipa/*.ipa
+    publishing:
+      email:
+        recipients:
+          - vjvsanket@gmail.com
