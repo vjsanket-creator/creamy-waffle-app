@@ -10,7 +10,10 @@ workflows:
         script: npm install
       - name: Build web assets
         script: npm run build
-      - name: Sync Capacitor iOS platform
-        script: npx cap sync ios
+      - name: Ensure www directory exists and sync
+        script: |
+          # Agar build dist me banta hai to use www me copy karne ke liye:
+          if [ -d "dist" ]; then cp -r dist/* www/; fi
+          npx cap sync ios
     artifacts:
       - build/ios/ipa/*.ipa
