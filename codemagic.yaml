@@ -10,8 +10,11 @@ workflows:
         script: npm install
       - name: Build web assets
         script: npm run build
-      - name: Ensure www directory exists and sync
+      - name: Add iOS platform and sync
         script: |
+          if [ ! -d "ios" ]; then
+            npx cap add ios
+          fi
           if [ -d "dist" ]; then cp -r dist/* www/; fi
           npx cap sync ios
       - name: Build iOS Archive
