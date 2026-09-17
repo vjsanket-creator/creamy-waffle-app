@@ -14,9 +14,11 @@ workflows:
         script: |
           if [ -d "dist" ]; then cp -r dist/* www/; fi
           npx cap sync ios
+      - name: Build iOS App Archive
+        script: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -archivePath $HOME/Library/Developer/Xcode/Archives/App.xcarchive archive
+          xcodebuild -exportArchive -archivePath $HOME/Library/Developer/Xcode/Archives/App.xcarchive -exportOptionsPlist exportOptions.plist -exportPath $HOME/output
     artifacts:
+      - $HOME/output/*.ipa
       - build/ios/ipa/*.ipa
-    publishing:
-      email:
-        recipients:
-          - vjvsanket@gmail.com
