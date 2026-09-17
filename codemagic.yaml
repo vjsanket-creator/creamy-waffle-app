@@ -14,6 +14,11 @@ workflows:
         script: |
           if [ -d "dist" ]; then cp -r dist/* www/; fi
           npx cap sync ios
+      - name: Build ipa
+        script: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -destination "generic/platform=iOS" archive -archivePath $HOME/Library/Developer/Xcode/Archives/App.xcarchive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          xcodebuild -exportArchive -archivePath $HOME/Library/Developer/Xcode/Archives/App.xcarchive -exportPath $HOME/output -exportOptionsPlist exportOptions.plist || true
     artifacts:
+      - $HOME/output/*.ipa
       - ios/App/build/Debug-iphoneos/*.app
-      - build/ios/ipa/*.ipa
