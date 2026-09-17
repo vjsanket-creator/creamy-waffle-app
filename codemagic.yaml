@@ -18,7 +18,6 @@ workflows:
         script: |
           cd ios/App
           xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -archivePath $HOME/Library/Developer/Xcode/Archives/App.xcarchive archive
-          xcodebuild -exportArchive -archivePath $HOME/Library/Developer/Xcode/Archives/App.xcarchive -exportOptionsPlist exportOptions.plist -exportPath $HOME/output
     artifacts:
-      - $HOME/output/*.ipa
+      - $HOME/Library/Developer/Xcode/Archives/**/*.xcarchive
       - build/ios/ipa/*.ipa
