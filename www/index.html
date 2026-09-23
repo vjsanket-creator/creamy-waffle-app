@@ -3584,33 +3584,40 @@
   });
 
   db.collection("menu").doc("store_config").onSnapshot((doc) => {
-    if (doc.exists) {
-      const data = doc.data();
-      if (data.categories) {
-        categories = data.categories;
-        localStorage.setItem('paras_categories', JSON.stringify(categories));
+  if (doc.exists) {
+    const data = doc.data();
+    // --- LOAD CLOUD BG IF EXISTS ---
+    if (data.customBg !== undefined) {
+      if (data.customBg) {
+        localStorage.setItem('paras_custom_bg', data.customBg);
+      } else {
+        localStorage.removeItem('paras_custom_bg');
       }
-      if (data.products) {
-        products = data.products.map(p => ({ 
-          ...p, 
-          theme: 'card-amber', 
-          showPrice: p.showPrice !== undefined ? p.showPrice : true,
-          likesCount: p.likesCount !== undefined ? p.likesCount : 0, 
-          likedUsers: p.likedUsers || [] 
-        }));
-        localStorage.setItem('paras_products', JSON.stringify(products));
-      }
-      if (data.fontSettings) {
-        fontSettings = data.fontSettings;
-        localStorage.setItem('paras_font_settings', JSON.stringify(fontSettings));
-        applyFontSettings();
-      }
-      renderCategories();
-      renderProducts(document.getElementById('searchInput').value);
-    } else {
-      syncMenuToCloud();
     }
-  });
+    if (data.bgOpacity) {
+      localStorage.setItem('paras_bg_opacity', data.bgOpacity);
+    }
+    loadCustomBg();
+    // -------------------------------
+    
+    if (data.categories) {
+      categories = data.categories;
+      localStorage.setItem('paras_categories', JSON.stringify(categories));
+    }
+    if (data.products) {
+      products = data.products.map(p => ({ 
+        ...p, 
+        theme: 'card-amber', 
+        showPrice: p.showPrice !== undefined ? p.showPrice : true,
+        likesCount: p.likesCount !== undefined ? p.likesCount : 0, 
+        likedUsers: p.likedUsers || [] 
+      }));
+      localStorage.setItem('paras_products', JSON.stringify(products));
+    }
+    renderCategories();
+    renderProducts(document.getElementById('searchInput').value);
+  }
+});
 
   function syncMenuToCloud() {
     db.collection("menu").doc("store_config").set({
@@ -4276,21 +4283,29 @@
   }
 
   function updateCustomBg(event) {
-    const file = event.target.files[0];
-    if (file) {
-      compressImage(file, 800, 0.7, (compressedUrl) => {
-        try {
-          localStorage.setItem('paras_custom_bg', compressedUrl);
-          if (!localStorage.getItem('paras_bg_opacity')) {
-            localStorage.setItem('paras_bg_opacity', '0.05');
-          }
-          loadCustomBg();
-        } catch(err) {
-          alert("Image file is too large!");
+  const file = event.target.files[0];
+  if (file) {
+    compressImage(file, 800, 0.7, (compressedUrl) => {
+      try {
+        localStorage.setItem('paras_custom_bg', compressedUrl);
+        if (!localStorage.getItem('paras_bg_opacity')) {
+          localStorage.setItem('paras_bg_opacity', '0.05');
         }
-      });
-    }
+        
+        // --- CLOUD SYNC ADDED HERE ---
+        db.collection("menu").doc("store_config").set({
+          customBg: compressedUrl,
+          bgOpacity: localStorage.getItem('paras_bg_opacity') || '0.05'
+        }, { merge: true }).catch(err => console.log("BG sync error:", err));
+        // -----------------------------
+
+        loadCustomBg();
+      } catch(err) {
+        alert("Image file is too large!");
+      }
+    });
   }
+}
 
   function changeBgOpacity(val) {
     const bgLayer = document.getElementById('bgCustomLayer');
@@ -4300,11 +4315,19 @@
   }
 
   function removeCustomBg() {
-    localStorage.removeItem('paras_custom_bg');
-    localStorage.removeItem('paras_bg_opacity');
-    document.getElementById('bgFileInput').value = "";
-    loadCustomBg();
-  }
+  localStorage.removeItem('paras_custom_bg');
+  localStorage.removeItem('paras_bg_opacity');
+  document.getElementById('bgFileInput').value = "";
+  
+  // --- CLOUD REMOVE SYNC ---
+  db.collection("menu").doc("store_config").set({
+    customBg: "",
+    bgOpacity: "0.05"
+  }, { merge: true }).catch(err => console.log("BG remove sync error:", err));
+  // -------------------------
+
+  loadCustomBg();
+}
 
   function loadShopTitle() {
     const savedTitle = localStorage.getItem('paras_shop_title');
