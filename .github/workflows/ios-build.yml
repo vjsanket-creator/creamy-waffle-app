@@ -1,0 +1,54 @@
+name: Build Creamy Waffle iOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-ios:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Capacitor iOS
+        run: npm install @capacitor/ios@^8.5.2
+
+      - name: Build web application
+        run: npm run build
+
+      - name: Add iOS platform
+        run: npx cap add ios
+
+      - name: Sync Capacitor
+        run: npx cap sync ios
+
+      - name: Build iOS application
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: Upload iOS build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Creamy-Waffle-iOS-Build
+          path: ios/App/build/Build/Products/Debug-iphonesimulator/App.app
