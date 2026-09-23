@@ -4273,6 +4273,46 @@
       bgLayer.style.backgroundImage = "none";
       if (opacityBox) opacityBox.style.display = "none";
       if (removeBtn) removeBtn.style.display = "none";
+
+      // --- NEW UPDATE CHECK POPUP FEATURE (Baaki code untouched hai) ---
+function checkForAppUpdate() {
+  db.collection("menu").doc("app_version").onSnapshot((doc) => {
+    if (doc.exists) {
+      const data = doc.data();
+      const cloudVersion = data.latestVersion || "1.2";
+      const androidUrl = data.androidUrl || "#";
+      const updateMsg = data.updateMessage || "New Features are available!";
+      
+      const currentAppVersion = localStorage.getItem("app_installed_version") || "1.2";
+
+      if (cloudVersion !== currentAppVersion) {
+        showUpdatePopup(cloudVersion, updateMsg, androidUrl);
+      }
+    }
+  });
+}
+
+function showUpdatePopup(newVer, msg, link) {
+  let existingModal = document.getElementById('updatePopupModal');
+  if (existingModal) existingModal.remove();
+
+  const modalHtml = `
+    <div id="updatePopupModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 99999;">
+      <div style="background: #fff; padding: 25px; border-radius: 16px; width: 85%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); font-family: 'Poppins', sans-serif;">
+        <h2 style="color: #ff6b00; margin-bottom: 10px; font-size: 22px;">🚀 New Update Available!</h2>
+        <p style="color: #444; font-size: 14px; margin-bottom: 15px;">Version ${newVer} is now ready.</p>
+        <div style="background: #fff8f0; padding: 12px; border-radius: 8px; color: #333; font-size: 13px; margin-bottom: 20px; text-align: left; border-left: 4px solid #ff6b00;">
+          ${msg}
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <a href="${link}" target="_blank" onclick="localStorage.setItem('app_installed_version', '${newVer}');" style="background: #ff6b00; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; flex: 1; font-size: 14px;">Update Now</a>
+          <button onclick="document.getElementById('updatePopupModal').remove();" style="background: #ddd; color: #333; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Later</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
     }
   }
 
