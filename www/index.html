@@ -5371,10 +5371,10 @@ function toggleGeneralStock(typeKey, category, index) {
   function updateUpiLinkWithEditableAmount(amount) {
     const upiId = "Q007780883@ybl";
     const payeeName = "CreamyWaffle";
-    const txRef = "CRW" + Date.now();
     
-    // Proper parameters add karne se 'declined' error solve hota hai
-    const upiDeepLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tr=${txRef}&tn=CreamyWaffleOrder`;
+    // Yahan se 'am' (amount) parameter hata diya gaya hai taaki GPay mein amount locked na rahe 
+    // aur banks ki taraf se 'declined' error na aaye. User ab GPay mein khud amount daal sakega.
+    const upiDeepLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&cu=INR`;
 
     const gatewayUpiBtn = document.getElementById('gatewayUpiBtn');
     if (gatewayUpiBtn) gatewayUpiBtn.href = upiDeepLink;
@@ -5670,7 +5670,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.10"; // Ise Firebase ke latestVersion ("1.10") ke barabar kar dein
+  const currentVersion = "1.11"; // Ise Firebase ke latestVersion ("1.11") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
