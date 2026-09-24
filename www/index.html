@@ -5351,15 +5351,29 @@ function toggleGeneralStock(typeKey, category, index) {
     pendingPlacedOrder = newOrder;
     closePaymentSelectionModal();
 
+    // --- UPI Amount Link Dynamic Generation ---
+    const upiId = "Q007780883@ybl";
+    const payeeName = "CreamyWaffle";
+    const upiDeepLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${totalAmount}&cu=INR`;
+
+    // Update main payment selection modal link
+    const directUpiLink = document.getElementById('directUpiPayLink');
+    if (directUpiLink) directUpiLink.href = upiDeepLink;
+
+    // Update gateway modal link & total amount
+    const gatewayTotalElem = document.getElementById('gatewayOrderTotal');
+    if (gatewayTotalElem) gatewayTotalElem.textContent = `₹${totalAmount}`;
+
+    const gatewayUpiBtn = document.getElementById('gatewayUpiBtn');
+    if (gatewayUpiBtn) gatewayUpiBtn.href = upiDeepLink;
+    // ----------------------------------------
+
     if (selectedPaymentType === 'online') {
-      document.getElementById('gatewayOrderTotal').textContent = `₹${totalAmount}`;
       onlinePaymentGatewayModal.classList.add('active');
     } else {
       finalizeOrderCompletion(newOrder);
     }
   }
-
-  function closeOnlinePaymentGatewayModal() { onlinePaymentGatewayModal.classList.remove('active'); }
 
   function finishOnlinePaymentOrder() {
     if (pendingPlacedOrder) {
@@ -5648,7 +5662,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.8"; // Ise Firebase ke latestVersion ("1.8") ke barabar kar dein
+  const currentVersion = "1.9"; // Ise Firebase ke latestVersion ("1.9") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
