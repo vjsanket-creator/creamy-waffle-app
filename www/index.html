@@ -1008,7 +1008,7 @@
       transition: transform 0.15s ease;
     }
 
-    .photo-grid-item:active { transform: scale(0.96); }
+     .photo-grid-item:active { transform: scale(0.96); }
 
     .photo-grid-item img {
       width: 100%;
@@ -1810,20 +1810,7 @@
       border-radius: 6px;
       margin-left: 4px;
     }
-    .popsi-bottom-action-bar {
-      position: absolute;
-      bottom: 10px;
-      left: 20px;
-      right: 20px;
-      background: var(--primary-orange);
-      padding: 12px 20px;
-      border-radius: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 6px 20px rgba(234,88,12,0.4);
-      z-index: 290;
-    }
+    
     .popsi-bottom-action-bar {
     position: absolute;
     bottom: 10px;
@@ -1855,6 +1842,7 @@
     margin-left: 2px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
+
   </style>
 </head>
 <body>
@@ -2680,7 +2668,7 @@
     { name: "Choco Chips", price: 15, outOfStock: false }
   ];
 
-  // BOWL CAKE MENUS
+   // BOWL CAKE MENUS
   let bowlcakeBestSellers = JSON.parse(localStorage.getItem('paras_bowlcake_bestsellers')) || [
     { name: "Carnival Belgian", priceMedium: 149, priceLarge: 199, outOfStock: false },
     { name: "Dark Dazzle", priceMedium: 149, priceLarge: 199, outOfStock: false },
@@ -3136,7 +3124,7 @@
     updatePopsiSelectedCount();
   }
 
-  function toggleGeneralStock(typeKey, category, index) {
+function toggleGeneralStock(typeKey, category, index) {
     if (!currentUser || currentUser.role !== 'admin') return;
     let listRef = null;
     let storageKey = '';
@@ -4135,14 +4123,14 @@
         return;
       }
       const newUser = { 
-      name, 
-      username, 
-      email, 
-      phone, 
-      pass, 
-      role: "customer",
-      createdAt: new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
-    };
+        name, 
+        username, 
+        email, 
+        phone, 
+        pass, 
+        role: "customer",
+        createdAt: new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
+      };
       registeredUsers.push(newUser);
       localStorage.setItem('paras_users', JSON.stringify(registeredUsers));
       syncUserToCloud(newUser);
@@ -4283,29 +4271,27 @@
   }
 
   function updateCustomBg(event) {
-  const file = event.target.files[0];
-  if (file) {
-    compressImage(file, 800, 0.7, (compressedUrl) => {
-      try {
-        localStorage.setItem('paras_custom_bg', compressedUrl);
-        if (!localStorage.getItem('paras_bg_opacity')) {
-          localStorage.setItem('paras_bg_opacity', '0.05');
-        }
-        
-        // --- CLOUD SYNC ADDED HERE ---
-        db.collection("menu").doc("store_config").set({
-          customBg: compressedUrl,
-          bgOpacity: localStorage.getItem('paras_bg_opacity') || '0.05'
-        }, { merge: true }).catch(err => console.log("BG sync error:", err));
-        // -----------------------------
+    const file = event.target.files[0];
+    if (file) {
+      compressImage(file, 800, 0.7, (compressedUrl) => {
+        try {
+          localStorage.setItem('paras_custom_bg', compressedUrl);
+          if (!localStorage.getItem('paras_bg_opacity')) {
+            localStorage.setItem('paras_bg_opacity', '0.05');
+          }
+          
+          db.collection("menu").doc("store_config").set({
+            customBg: compressedUrl,
+            bgOpacity: localStorage.getItem('paras_bg_opacity') || '0.05'
+          }, { merge: true }).catch(err => console.log("BG sync error:", err));
 
-        loadCustomBg();
-      } catch(err) {
-        alert("Image file is too large!");
-      }
-    });
+          loadCustomBg();
+        } catch(err) {
+          alert("Image file is too large!");
+        }
+      });
+    }
   }
-}
 
   function changeBgOpacity(val) {
     const bgLayer = document.getElementById('bgCustomLayer');
@@ -4315,19 +4301,17 @@
   }
 
   function removeCustomBg() {
-  localStorage.removeItem('paras_custom_bg');
-  localStorage.removeItem('paras_bg_opacity');
-  document.getElementById('bgFileInput').value = "";
-  
-  // --- CLOUD REMOVE SYNC ---
-  db.collection("menu").doc("store_config").set({
-    customBg: "",
-    bgOpacity: "0.05"
-  }, { merge: true }).catch(err => console.log("BG remove sync error:", err));
-  // -------------------------
+    localStorage.removeItem('paras_custom_bg');
+    localStorage.removeItem('paras_bg_opacity');
+    document.getElementById('bgFileInput').value = "";
+    
+    db.collection("menu").doc("store_config").set({
+      customBg: "",
+      bgOpacity: "0.05"
+    }, { merge: true }).catch(err => console.log("BG remove sync error:", err));
 
-  loadCustomBg();
-}
+    loadCustomBg();
+  }
 
   function loadShopTitle() {
     const savedTitle = localStorage.getItem('paras_shop_title');
@@ -4831,83 +4815,7 @@
         `;
         container.appendChild(card);
     });
-}
-
-    // --- YAHAN AAPKA MONTHLY & YEARLY COUNT LOGIC AAYEGA ---
-    let monthlyCount = {};
-    let yearlyCount = {};
-
-    customers.forEach(user => {
-        if (user.createdAt) {
-            let d = new Date(user.createdAt);
-            let monthYear = `${d.toLocaleString('default', { month: 'long' })} ${d.getFullYear()}`;
-            let yearOnly = `${d.getFullYear()}`;
-            
-            monthlyCount[monthYear] = (monthlyCount[monthYear] || 0) + 1;
-            yearlyCount[yearOnly] = (yearlyCount[yearOnly] || 0) + 1;
-        }
-    });
-    // ----------------------------------------------------
-
-    customers.forEach((cust) => {
-        const card = document.createElement('div');
-        card.className = 'order-card-admin';
-        
-        // Date format karne ke liye
-        let regDate = cust.createdAt ? new Date(cust.createdAt).toLocaleString() : 'N/A';
-
-        card.innerHTML = `
-            <!-- Aapka purana card content jo yahan hoga -->
-            <div style="font-size: 12px; color: #777; margin-top: 6px;">Registered on: ${regDate}</div>
-        `;
-        container.appendChild(card);
-    });
-
-    function renderAdminCustomers() {
-    const container = document.getElementById('adminCustomersContainer');
-    if (!container) return;
-    container.innerHTML = '';
-
-    const usersList = JSON.parse(localStorage.getItem('paras_users')) || [];
-    const customers = usersList.filter(u => u.role !== 'admin');
-
-    const headerTitle = document.getElementById('adminCustomersHeaderTitle');
-    if (headerTitle) {
-        headerTitle.textContent = `Registered Customers (${customers.length}) 👥`;
-    }
-
-    if (customers.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding:40px; color:#9a3412; font-weight:700;">No customers registered yet!</div>`;
-        return;
-    }
-
-    customers.forEach((cust) => {
-        const card = document.createElement('div');
-        card.className = 'order-card-admin';
-        
-        let regDate = 'Standard / Legacy User';
-        if (cust.createdAt) {
-            const parsedDate = new Date(cust.createdAt);
-            if (!isNaN(parsedDate.getTime())) {
-                regDate = parsedDate.toLocaleString();
-            }
-        }
-
-        card.innerHTML = `
-            <div class="order-header-line">
-                <span style="font-weight:900; color:#7c2d12;">👤 ${cust.name || 'User'}</span>
-                <span class="status-badge status-preparing">Customer</span>
-            </div>
-            <div style="font-size:12px; color:#1f2937; margin-top:6px; display:flex; flex-direction:column; gap:4px;">
-                <div><b>Username:</b> ${cust.username || 'N/A'}</div>
-                <div><b>Mobile:</b> ${cust.phone || 'N/A'}</div>
-                <div><b>Email:</b> ${cust.email || 'N/A'}</div>
-                <div style="font-size:11px; color:#b45309; margin-top:4px; font-weight:600;">📅 Registered on: ${regDate}</div>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
+  }
 
   function openAdminSalesOverlay() {
     if (!currentUser || currentUser.role !== 'admin') return;
@@ -4994,7 +4902,7 @@
           itemCounts: { Popsi: 0, Candy: 0, Sandwich: 0, Cake: 0, PanCake: 0, BowlCake: 0 }
         };
       }
-      
+
       let dayBucket = salesByMonth[monthStr].days[dateStr];
       dayBucket.totalAmount += (order.totalAmount || 0);
       dayBucket.totalOrders += 1;
@@ -5065,19 +4973,18 @@
           </div>
 
           <div style="font-size: ${fontSettings.dailyTitleFontSize || 16}px; font-weight: 900; color: #c2410c; margin-bottom: 2px;">📦 Daily Item Quantities Sold:</div>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 12px; font-size: ${fontSettings.dailyFlavoursFontSize || 14}px; font-weight: 800; color: #7c2d12;">
-              <div>🍦 Popsi: ${counts.Popsi}</div>
-              <div>🍬 Candy: ${counts.Candy}</div>
-              <div>🥪 Sandwich: ${counts.Sandwich}</div>
-              <div>🍰 Cake: ${counts.Cake}</div>
-              <div>🥞 Pan Cake: ${counts.PanCake}</div>
-              <div>🥣 Bowl Cake: ${counts.BowlCake}</div>
-            </div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 12px; font-size: ${fontSettings.dailyFlavoursFontSize || 14}px; font-weight: 800; color: #7c2d12;">
+            <div>🍦 Popsi: ${counts.Popsi}</div>
+            <div>🍬 Candy: ${counts.Candy}</div>
+            <div>🥪 Sandwich: ${counts.Sandwich}</div>
+            <div>🍰 Cake: ${counts.Cake}</div>
+            <div>🥞 Pan Cake: ${counts.PanCake}</div>
+            <div>🥣 Bowl Cake: ${counts.BowlCake}</div>
           </div>
 
           <div style="font-size:12px; color:#1f2937; display:flex; flex-direction:column; gap:4px; margin-top:6px;">
             <div style="font-size:11px; font-weight:800; color:#9a3412;">Order Breakdown:</div>
-            ${dayData.orders.map(o => `<div>• ${o.orderId} - ${o.customerName} - ₹${o.totalAmount} (${o.status})</div>`).join('')}
+            ${dayData.orders.map(o => `<div>• ${o.orderId} -${o.customerName} - ₹${o.totalAmount} (${o.status})</div>`).join('')}
           </div>
         `;
         monthWrapper.appendChild(dayCard);
@@ -5741,7 +5648,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.5";
+  const currentVersion = "1.7";
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
