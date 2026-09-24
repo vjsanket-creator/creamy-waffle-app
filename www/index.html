@@ -4273,6 +4273,8 @@
       bgLayer.style.backgroundImage = "none";
       if (opacityBox) opacityBox.style.display = "none";
       if (removeBtn) removeBtn.style.display = "none";
+    }
+  }
 
   function triggerBgUpload() { 
     const inputElem = document.getElementById('bgFileInput');
@@ -5737,24 +5739,22 @@ loadPaymentQrCode();
 checkAuthState();
 checkAppVersion();
 
-// --- FINAL & CLEAN APP UPDATE CHECKER ---
+// Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
+  const currentVersion = "1.2";
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
       const docRef = db.collection('menu').doc('app_version');
       const docSnap = await docRef.get();
-
+      
       if (docSnap.exists) {
         const data = docSnap.data();
-        const latestVersion = data.latestVersion || "1.4";
-        const updateMessage = data.updateMessage || "New update is available!";
+        const latestVersion = data.latestVersion;
+        const updateMessage = data.updateMessage || "Naya update aagaya hai!";
         const androidUrl = data.androidUrl || "#";
         const iosUrl = data.iosUrl || "#";
-
-        // Current app version saved in phone storage
-        const currentVersion = localStorage.getItem("app_installed_version") || "1.1";
-
+        
         if (latestVersion && latestVersion !== currentVersion) {
           showUpdatePopup(updateMessage, androidUrl, iosUrl, latestVersion);
         }
@@ -5769,33 +5769,38 @@ function showUpdatePopup(msg, androidLink, iosLink, ver) {
   let existingOverlay = document.getElementById('appUpdateModalOverlay');
   if (existingOverlay) existingOverlay.remove();
 
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const downloadLink = isAndroid ? androidLink : iosLink;
+
   const overlay = document.createElement('div');
   overlay.id = 'appUpdateModalOverlay';
-  overlay.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 99999; font-family: 'Poppins', sans-serif;";
+  overlay.style.cssText = `
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+    z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px;
+  `;
 
   overlay.innerHTML = `
-    <div style="background: #ffffff; padding: 25px; border-radius: 20px; width: 85%; max-width: 380px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
-      <h2 style="color: #ff6b00; margin-bottom: 10px; font-size: 22px; font-weight: bold;">🚀 New Update Available!</h2>
-      <p style="color: #666; font-size: 13px; margin-bottom: 15px;">Version ${ver} is ready to explore.</p>
-      <div style="background: #fff8f0; padding: 12px; border-radius: 10px; color: #333; font-size: 13px; margin-bottom: 20px; text-align: left; border-left: 4px solid #ff6b00; line-height: 1.4;">
-        ${msg}
-      </div>
-      <a href="${androidLink}" target="_blank" onclick="localStorage.setItem('app_installed_version', '${ver}'); document.getElementById('appUpdateModalOverlay').remove();" style="display: block; background: #ff6b00; color: white; text-decoration: none; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 14px; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(255,107,0,0.3);">
-        Download Update Now
+    <div style="background: #ffffff; width: 100%; max-width: 340px; border-radius: 28px; padding: 24px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 2px solid #fed7aa;">
+      <div style="font-size: 40px; margin-bottom: 10px;">🚀</div>
+      <h3 style="font-size: 20px; font-weight: 900; color: #7c2d12; margin-bottom: 8px;">Update Available! (v${ver})</h3>
+      <p style="font-size: 13px; color: #4b5563; font-weight: 600; line-height: 1.4; margin-bottom: 20px;">${msg}</p>
+      
+      <a href="${downloadLink}" target="_blank" style="display: block; background: #ea580c; color: white; text-decoration: none; padding: 12px; border-radius: 16px; font-size: 14px; font-weight: 800; box-shadow: 0 4px 12px rgba(234,88,12,0.4); margin-bottom: 10px;">
+        📲 Download Update Now
       </a>
-      <button onclick="document.getElementById('appUpdateModalOverlay').remove();" style="background: transparent; border: none; color: #888; font-size: 13px; cursor: pointer; padding: 5px; font-weight: 500;">
+      
+      <button onclick="document.getElementById('appUpdateModalOverlay').remove()" style="background: transparent; border: none; color: #9ca3af; font-size: 12px; font-weight: 700; cursor: pointer; padding: 6px;">
         Later / Skip for now
       </button>
     </div>
   `;
+
   document.body.appendChild(overlay);
 }
 
-// Trigger check after app loads safely
 window.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    checkAppVersion();
-  }, 2000);
+  setTimeout(checkAppVersion, 1500);
 });
 
 </script>
