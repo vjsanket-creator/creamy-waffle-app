@@ -5648,11 +5648,11 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.7";
+  const currentVersion = "1.8"; // Ise Firebase ke latestVersion ("1.8") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
-      const docRef = db.collection('menu').doc('app_version');
+      const docRef = db.collection('menu').doc('app_version'); // Yahan underscore sahi kar diya hai
       const docSnap = await docRef.get();
       
       if (docSnap.exists) {
@@ -5662,7 +5662,9 @@ async function checkAppVersion() {
         const androidUrl = data.androidUrl || "#";
         const iosUrl = data.iosUrl || "#";
         
-        if (latestVersion && latestVersion !== currentVersion) {
+        // Check if update is needed and user hasn't skipped this version
+        const skippedVersion = sessionStorage.getItem('skipped_version');
+        if (latestVersion && latestVersion !== currentVersion && skippedVersion !== latestVersion) {
           showUpdatePopup(updateMessage, androidUrl, iosUrl, latestVersion);
         }
       }
@@ -5697,7 +5699,7 @@ function showUpdatePopup(msg, androidLink, iosLink, ver) {
         📲 Download Update Now
       </a>
       
-      <button onclick="document.getElementById('appUpdateModalOverlay').remove()" style="background: transparent; border: none; color: #9ca3af; font-size: 12px; font-weight: 700; cursor: pointer; padding: 6px;">
+      <button onclick="sessionStorage.setItem('skipped_version', '${ver}'); document.getElementById('appUpdateModalOverlay').remove();" style="background: transparent; border: none; color: #9ca3af; font-size: 12px; font-weight: 700; cursor: pointer; padding: 6px;">
         Later / Skip for now
       </button>
     </div>
