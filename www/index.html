@@ -5351,28 +5351,36 @@ function toggleGeneralStock(typeKey, category, index) {
     pendingPlacedOrder = newOrder;
     closePaymentSelectionModal();
 
-    // --- UPI Amount Link Dynamic Generation ---
-    const upiId = "Q007780883@ybl";
-    const payeeName = "CreamyWaffle";
-    const upiDeepLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${totalAmount}&cu=INR`;
-
-    // Update main payment selection modal link
-    const directUpiLink = document.getElementById('directUpiPayLink');
-    if (directUpiLink) directUpiLink.href = upiDeepLink;
-
-    // Update gateway modal link & total amount
-    const gatewayTotalElem = document.getElementById('gatewayOrderTotal');
-    if (gatewayTotalElem) gatewayTotalElem.textContent = `₹${totalAmount}`;
-
-    const gatewayUpiBtn = document.getElementById('gatewayUpiBtn');
-    if (gatewayUpiBtn) gatewayUpiBtn.href = upiDeepLink;
-    // ----------------------------------------
-
     if (selectedPaymentType === 'online') {
+      // Amount ko editable input field banate hain gateway modal ke andar
+      const gatewayTotalElem = document.getElementById('gatewayOrderTotal');
+      if (gatewayTotalElem) {
+        gatewayTotalElem.innerHTML = `
+          <span>₹</span>
+          <input type="number" id="editableGatewayAmount" value="${totalAmount}" style="font-size: 18px; font-weight: 900; padding: 4px 8px; width: 110px; border: 2px solid #ea580c; border-radius: 8px; text-align: center; background: #fff7ed; color: #7c2d12;" oninput="updateUpiLinkWithEditableAmount(this.value)">
+        `;
+      }
+
+      updateUpiLinkWithEditableAmount(totalAmount);
       onlinePaymentGatewayModal.classList.add('active');
     } else {
       finalizeOrderCompletion(newOrder);
     }
+  }
+
+  function updateUpiLinkWithEditableAmount(amount) {
+    const upiId = "Q007780883@ybl";
+    const payeeName = "CreamyWaffle";
+    const txRef = "CRW" + Date.now();
+    
+    // Proper parameters add karne se 'declined' error solve hota hai
+    const upiDeepLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tr=${txRef}&tn=CreamyWaffleOrder`;
+
+    const gatewayUpiBtn = document.getElementById('gatewayUpiBtn');
+    if (gatewayUpiBtn) gatewayUpiBtn.href = upiDeepLink;
+
+    const directUpiLink = document.getElementById('directUpiPayLink');
+    if (directUpiLink) directUpiLink.href = upiDeepLink;
   }
 
   function finishOnlinePaymentOrder() {
@@ -5662,7 +5670,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.9"; // Ise Firebase ke latestVersion ("1.9") ke barabar kar dein
+  const currentVersion = "1.10"; // Ise Firebase ke latestVersion ("1.10") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
