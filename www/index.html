@@ -5385,18 +5385,30 @@ function toggleGeneralStock(typeKey, category, index) {
 
   function finishOnlinePaymentOrder() {
     if (pendingPlacedOrder) {
-      // Agar user ne editable amount mein kuch change kiya ho toh use update kar lete hain
+      // Amount update check agar editable field ho
       const editableInput = document.getElementById('editableGatewayAmount');
       if (editableInput && !isNaN(editableInput.value)) {
         pendingPlacedOrder.totalAmount = Number(editableInput.value);
       }
 
+      // Order finalize karke queue mein daal diya
       finalizeOrderCompletion(pendingPlacedOrder);
+      
+      // Modal ko turant close karne ka direct method
       closeOnlinePaymentGatewayModal();
     } else {
-      // Fallback agar pending order object missing ho
+      // Fallback agar pending order na ho toh bhi modal close ho jaye
       closeOnlinePaymentGatewayModal();
     }
+  }
+
+  function closeOnlinePaymentGatewayModal() {
+    const modal = document.getElementById('onlinePaymentGatewayModal');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.style.display = 'none'; // Ensure karega ki modal hide ho jaye
+    }
+    pendingPlacedOrder = null;
   }
 
   function finalizeOrderCompletion(orderObj) {
@@ -5679,7 +5691,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.13"; // Ise Firebase ke latestVersion ("1.13") ke barabar kar dein
+  const currentVersion = "1.14"; // Ise Firebase ke latestVersion ("1.14") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
