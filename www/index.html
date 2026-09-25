@@ -5416,6 +5416,14 @@ function toggleGeneralStock(typeKey, category, index) {
     saveOrdersToStorage();
     syncOrderToCloud(orderObj);
 
+    // www folder se bell sound play karne ke liye
+    try {
+      const bellAudio = new Audio('notification.mp3'); // Agar aapki file ka naam kuch aur hai jaise 'bell.mp3' toh yahan file ka naam likh dein
+      bellAudio.play().catch(e => console.log("Audio play error:", e));
+    } catch (err) {
+      console.log("Sound error:", err);
+    }
+
     cartItems = [];
     document.getElementById('custNameInput').value = '';
     document.getElementById('custPhoneInput').value = '';
@@ -5691,7 +5699,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.14"; // Ise Firebase ke latestVersion ("1.14") ke barabar kar dein
+  const currentVersion = "1.15"; // Ise Firebase ke latestVersion ("1.15") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
