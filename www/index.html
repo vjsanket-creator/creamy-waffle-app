@@ -2437,30 +2437,30 @@
     </div>
   </div>
 
-  <!-- ONLINE PAYMENT GATEWAY POPUP -->
-  <div class="modal-overlay" id="onlinePaymentGatewayModal">
-    <div class="modal-card" style="text-align:center;">
-      <div class="modal-header">
-        <h3>Complete Online Payment 📱</h3>
-        <button class="close-btn" onclick="closeOnlinePaymentGatewayModal()">✕</button>
-      </div>
-      <p style="font-size:12px; color:#9a3412; margin-bottom:12px; font-weight:600;">Scan QR code or click below to pay instantly via your UPI App:</p>
-      
-      <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:16px; padding:14px; margin-bottom:16px;">
-        <div style="font-size:14px; font-weight:900; color:#7c2d12; margin-bottom:8px;">Order Total: <span id="gatewayOrderTotal" style="color:var(--primary-orange);">₹0</span></div>
-        <div style="background:white; width:150px; height:150px; margin:0 auto 10px; border-radius:10px; display:flex; align-items:center; justify-content:center; border:1px solid #fed7aa; padding:6px;">
-          <img id="gatewayQrImg" alt="QR Code" style="width:100%; height:100%; object-fit:contain;">
-        </div>
-        <div style="font-size:12px; font-weight:800; color:#c2410c; margin-bottom:10px;">UPI ID: Q007780883@ybl</div>
-        
-        <a id="gatewayUpiBtn" href="upi://pay?pa=Q007780883@ybl&pn=CreamyWaffle&cu=INR" target="_blank" style="display:block; background:#16a34a; color:white; padding:12px; border-radius:12px; font-size:13px; font-weight:800; text-decoration:none; box-shadow:0 4px 12px rgba(22,163,74,0.3);">
-          ⚡ Open GPay / PhonePe / Paytm App to Pay
-        </a>
-      </div>
-
-      <button class="btn-submit" style="background:#16a34a;" onclick="finishOnlinePaymentOrder()">I Have Paid - Submit Order ✅</button>
+  <!-- Online Payment Gateway Modal ke andar yeh structure rakhein -->
+<div id="onlinePaymentGatewayModal" class="modal-overlay">
+  <div class="modal-box" style="text-align: center;">
+    <h3>Scan & Pay Instantly 🚀</h3>
+    <p style="font-size: 13px; color: #4b5563; margin-bottom: 10px;">
+      Apne GPay, PhonePe ya Paytm se yeh QR code scan karein aur fatat payment karein!
+    </p>
+    
+    <!-- Yeh aapka Shop QR Code direct display hoga -->
+    <img id="gatewayQrImg" src="Shop_QR.jpeg" alt="Shop QR Code" style="width: 200px; height: 200px; border-radius: 12px; border: 2px solid #fed7aa; margin: 10px auto; display: block;">
+    
+    <div style="font-size: 16px; font-weight: 900; color: #7c2d12; margin: 10px 0;">
+      Total Amount: <span id="gatewayOrderTotal">₹0</span>
     </div>
+
+    <button onclick="finishOnlinePaymentOrder()" style="background: #16a34a; color: white; border: none; padding: 12px 20px; border-radius: 14px; font-weight: 900; width: 100%; margin-top: 10px; cursor: pointer;">
+      ✅ I Have Paid / Complete Order
+    </button>
+    
+    <button onclick="closeOnlinePaymentGatewayModal()" style="background: transparent; border: none; color: #9ca3af; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 8px;">
+      Cancel
+    </button>
   </div>
+</div>
 
   <!-- ADMIN FEEDBACKS OVERLAY -->
   <div class="cart-page-overlay" id="adminFeedbacksOverlay">
@@ -5385,7 +5385,16 @@ function toggleGeneralStock(typeKey, category, index) {
 
   function finishOnlinePaymentOrder() {
     if (pendingPlacedOrder) {
+      // Agar user ne editable amount mein kuch change kiya ho toh use update kar lete hain
+      const editableInput = document.getElementById('editableGatewayAmount');
+      if (editableInput && !isNaN(editableInput.value)) {
+        pendingPlacedOrder.totalAmount = Number(editableInput.value);
+      }
+
       finalizeOrderCompletion(pendingPlacedOrder);
+      closeOnlinePaymentGatewayModal();
+    } else {
+      // Fallback agar pending order object missing ho
       closeOnlinePaymentGatewayModal();
     }
   }
@@ -5670,7 +5679,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.11"; // Ise Firebase ke latestVersion ("1.11") ke barabar kar dein
+  const currentVersion = "1.13"; // Ise Firebase ke latestVersion ("1.13") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
