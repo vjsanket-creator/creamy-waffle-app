@@ -2058,7 +2058,7 @@
       </div>
 
       <!-- Profile Logo upar right corner mein -->
-      <img src="waffle-logo.png" class="profile-avatar" alt="Shop Logo" style="width: 65px; height: 65px; border-radius: 50%; object-fit: cover;">
+      <img src="waffle-logo.png" class="profile-avatar" alt="Shop Logo" style="width: 65px; height: 65px; border-radius: 50%; object-fit: cover; margin-top: -20px;">
     </div>
 
     <!-- SEARCH SECTION -->
@@ -5763,7 +5763,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.18"; // Ise Firebase ke latestVersion ("1.18") ke barabar kar dein
+  const currentVersion = "1.19"; // Ise Firebase ke latestVersion ("1.19") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
