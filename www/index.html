@@ -1890,10 +1890,19 @@
   flex-wrap: nowrap;
   justify-content: flex-end;
 }
+/* Netlify floating badge ko hide karne ke liye */
+  iframe#netlify-badge, 
+  .netlify-deploy-badge, 
+  a[href*="netlify.com/from"] {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
   </style>
 </head>
 <body>
-
+  <audio id="orderNotificationSound" src="bell.mp3" preload="auto"></audio>
+  <div class="app-container" id="appContainer">
 <div class="app-container" id="appContainer">
   <div class="bg-custom-layer" id="bgCustomLayer"></div>
 
@@ -3554,7 +3563,14 @@ function toggleGeneralStock(typeKey, category, index) {
       console.log("Audio play error:", e);
     }
   }
-
+// Firestore Listener for New Orders
+db.collection("orders").onSnapshot((snapshot) => {
+  snapshot.docChanges().forEach((change) => {
+    if (change.type === "added") {
+      playOrderNotificationSound();
+    }
+  });
+});
   // REALTIME GALLERY SYNC (PERSISTENT CLOUD & LOCAL STORAGE MERGE)
   db.collection("gallery").doc("customer_gallery").onSnapshot((doc) => {
     let cloudGallery = [];
@@ -5763,7 +5779,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.20"; // Ise Firebase ke latestVersion ("1.20") ke barabar kar dein
+  const currentVersion = "2.0"; // Ise Firebase ke latestVersion ("2.0") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
