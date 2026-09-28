@@ -273,7 +273,7 @@
     .title-edit-container {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 35px;
       margin-top: 4px;
     }
 
@@ -316,11 +316,12 @@
     }
 
     .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      position: relative;
-    }
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: 15px; /* Yeh line add karni hai taaki gap mil jaye */
+    position: relative;
+  }
 
     .profile-avatar {
       width: 44px;
@@ -1826,23 +1827,69 @@
     z-index: 290;
 }
 
-/* Yeh raha aapka naya code */
-.no-maida-badge-text {
-    display: block; /* Isse yeh line ke niche shift ho jayega */
-    width: max-content;
-    background: linear-gradient(135deg, #fef08a, #fde047);
-    color: #b91c1c;
-    font-weight: 900;
-    font-size: 11px;
-    padding: 3px 7px;
-    border-radius: 6px;
-    border: 2px dashed #dc2626;
-    transform: rotate(2deg);
-    margin-top: 18px; /* Isse yeh logo se thoda niche aa jayega */
-    margin-left: 2px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+/* Mulund East Location and Shifted NO MAIDA Badge CSS */
+.shop-location-sub {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  color: #9a3412;
+  margin-top: 20px;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
 }
 
+.no-maida-badge-text {
+  display: block;
+  width: max-content;
+  background: linear-gradient(135deg, #fef08a, #fde047);
+  color: #b91c1c;
+  font-weight: 900;
+  font-size: 11px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  border: 2px dashed #dc2626;
+  transform: rotate(2deg);
+  margin-top: -25px;
+  margin-left: 150px; /* Isse badge ko right side shift kiya gaya hai */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+  padding: 20px 15px 10px;
+}
+.user-greeting {
+  display: flex;
+  flex-direction: column;
+  max-width: 55%;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 15px 10px;
+  gap: 10px;
+}
+.user-greeting {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.title-edit-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
   </style>
 </head>
 <body>
@@ -1852,10 +1899,11 @@
 
   <!-- AUTHENTICATION OVERLAY -->
   <div class="auth-page-overlay" id="authOverlay">
-    <div class="auth-logo-box">
-      <img id="authLogoImg" src="Creamy Waffle Logo_HighRes.jpg" class="auth-brand-emblem" alt="Creamy Waffle Logo">
-      <div class="auth-logo-title">Creamy Waffle</div>
-      <div class="auth-subtitle" id="authFormSubtitle">Login to your account</div>
+   <div class="auth-logo-box" style="margin-bottom: 4px; padding-top: 10px; text-align: center;">
+      <img src="waffle-logo.png" alt="Logo" style="width: 1200px; height: auto; display: inline-block; margin-bottom: -30px;">
+      <div class="auth-logo-title" style="font-size: 42px; margin-bottom: 12px; line-height: 1.1;">Creamy Waffle</div>
+      <div style="font-size: 15px; font-weight: 800; color: #9a3412; margin-bottom: 2px; letter-spacing: 0.5px;">(Mulund East)</div>
+      <div class="auth-subtitle" id="authFormSubtitle" style="font-size: 14px; margin-top: 0; margin-bottom: 0;">Login to your account</div>
     </div>
 
     <form class="auth-form" id="authForm" onsubmit="handleAuthSubmit(event)">
@@ -1976,30 +2024,41 @@
   </div>
 
   <div class="scroll-content">
-    <div class="header">
-      <div class="user-greeting">
+    <div class="header" style="display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 20px 10px; position: relative;">
+      <div class="user-greeting" style="flex: 1; position: relative;">
         <span class="sub" id="greetingUserSub">Hello Guest</span>
-        <div class="title-edit-container">
-          <span class="title" id="shopTitleText">Creamy Waffle</span>
+        
+        <div class="title-edit-container" style="display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: nowrap;">
+          <div style="display: flex; flex-direction: column;">
+            <span class="title" id="shopTitleText" style="line-height: 1.1;">Creamy Waffle</span>
+          </div>
+          
+          <!-- Icons bilkul Creamy Waffle ke right side mein horizontal line mein -->
+          <div class="header-actions" style="display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; margin-left: 6px;">
+            <div class="btn-icon" onclick="openFeedbackModal()" title="Give Feedback">💬</div>
+            <div class="btn-icon" id="adminSalesBtn" style="display:none;" onclick="openAdminSalesOverlay()" title="Sales Analytics & Reports">📊</div>
+            <div class="btn-icon" id="adminCustomersBtn" style="display:none;" onclick="openAdminCustomersOverlay()" title="Registered Customers List">👥</div>
+            <div class="btn-icon" id="adminFeedbacksBtn" style="display:none;" onclick="openAdminFeedbacksOverlay()" title="Customer Feedbacks Dashboard">
+              <span class="badge" id="feedbackBadge" style="display:none;">0</span>⭐
+            </div>
+            <div class="btn-icon" id="adminOrdersBtn" style="display:none;" onclick="openAdminOrdersOverlay()" title="Live Orders Queue">
+              <span class="badge" id="orderBadge" style="display:none;">0</span>🔔
+            </div>
+            <div class="btn-icon" onclick="logoutUser()" title="Logout">🚪</div>
+          </div>
+        </div>
+
+        <!-- Edit Button niche ya title ke paas -->
+        <div style="margin-top: 4px;">
           <button class="edit-title-btn" id="editShopTitleBtn" style="display:none;" onclick="editShopTitle()" title="Edit Title">✎</button>
         </div>
-            <!-- NO MAIDA Badge Yahan Add Karein -->
-            <span class="no-maida-badge-text">🚫 NO MAIDA</span>
-      </div>
-      <div class="header-actions">
-        <div class="btn-icon" onclick="openFeedbackModal()" title="Give Feedback">💬</div>
-        <div class="btn-icon" id="adminSalesBtn" style="display:none;" onclick="openAdminSalesOverlay()" title="Sales Analytics & Reports">📊</div>
-        <div class="btn-icon" id="adminCustomersBtn" style="display:none;" onclick="openAdminCustomersOverlay()" title="Registered Customers List">👥</div>
-        <div class="btn-icon" id="adminFeedbacksBtn" style="display:none;" onclick="openAdminFeedbacksOverlay()" title="Customer Feedbacks Dashboard">
-          <span class="badge" id="feedbackBadge" style="display:none;">0</span>⭐
-        </div>
-        <div class="btn-icon" id="adminOrdersBtn" style="display:none;" onclick="openAdminOrdersOverlay()" title="Live Orders Queue">
-          <span class="badge" id="orderBadge" style="display:none;">0</span>🔔
-        </div>
-        <div class="btn-icon" onclick="logoutUser()" title="Logout">🚪</div>
 
-        <img id="profileImg" src="Creamy Waffle Logo_HighRes.jpg" class="profile-avatar" alt="Shop Logo">
+        <span class="shop-location-sub" style="margin-top: 4px;">(Mulund East)</span>
+        <span class="no-maida-badge-text">🚫 NO MAIDA</span>
       </div>
+
+      <!-- Profile Logo upar right corner mein -->
+      <img src="waffle-logo.png" class="profile-avatar" alt="Shop Logo" style="width: 65px; height: 65px; border-radius: 50%; object-fit: cover;">
     </div>
 
     <!-- SEARCH SECTION -->
@@ -5704,7 +5763,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.16"; // Ise Firebase ke latestVersion ("1.16") ke barabar kar dein
+  const currentVersion = "1.18"; // Ise Firebase ke latestVersion ("1.18") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
