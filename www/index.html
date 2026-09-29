@@ -1890,13 +1890,17 @@
   flex-wrap: nowrap;
   justify-content: flex-end;
 }
-/* Netlify floating badge ko hide karne ke liye */
+/* Netlify badge ko completely remove aur hide karne ke liye */
   iframe#netlify-badge, 
   .netlify-deploy-badge, 
-  a[href*="netlify.com/from"] {
+  a[href*="netlify.com/from"],
+  body > a:has(img[alt*="Netlify"]) {
     display: none !important;
     visibility: hidden !important;
+    opacity: 0 !important;
     pointer-events: none !important;
+    position: absolute !important;
+    top: -9999px !important;
   }
   </style>
 </head>
@@ -3563,8 +3567,13 @@ function toggleGeneralStock(typeKey, category, index) {
       console.log("Audio play error:", e);
     }
   }
-// Firestore Listener for New Orders
+// Firestore Listener for New Orders (Only play on actual new incoming orders after load)
+let isInitialOrderLoad = true;
 db.collection("orders").onSnapshot((snapshot) => {
+  if (isInitialOrderLoad) {
+    isInitialOrderLoad = false;
+    return; // App open hone par pehli baar sound nahi bajega
+  }
   snapshot.docChanges().forEach((change) => {
     if (change.type === "added") {
       playOrderNotificationSound();
@@ -5779,7 +5788,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "2.0"; // Ise Firebase ke latestVersion ("2.0") ke barabar kar dein
+  const currentVersion = "2.1"; // Ise Firebase ke latestVersion ("2.1") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
