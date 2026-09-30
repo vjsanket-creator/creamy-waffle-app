@@ -3567,16 +3567,21 @@ function toggleGeneralStock(typeKey, category, index) {
       console.log("Audio play error:", e);
     }
   }
-// Firestore Listener for New Orders (Only play on actual new incoming orders after load)
+// Firestore Listener for New Orders (Optimized for Customer Orders & iPhone Audio)
 let isInitialOrderLoad = true;
 db.collection("orders").onSnapshot((snapshot) => {
   if (isInitialOrderLoad) {
     isInitialOrderLoad = false;
-    return; // App open hone par pehli baar sound nahi bajega
+    return;
   }
   snapshot.docChanges().forEach((change) => {
     if (change.type === "added") {
       playOrderNotificationSound();
+      const audioEl = document.getElementById('orderNotificationSound');
+      if (audioEl) {
+        audioEl.currentTime = 0;
+        audioEl.play().catch(err => console.log("Audio play deferred:", err));
+      }
     }
   });
 });
@@ -5788,7 +5793,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "2.1"; // Ise Firebase ke latestVersion ("2.1") ke barabar kar dein
+  const currentVersion = "1.2"; // Ise Firebase ke latestVersion ("1.2") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
