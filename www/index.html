@@ -3567,7 +3567,7 @@ function toggleGeneralStock(typeKey, category, index) {
       console.log("Audio play error:", e);
     }
   }
-// Firestore Listener for New Orders (Optimized for Customer Orders & iPhone Audio)
+// Firestore Listener for Live Netlify Orders & Sound Trigger
 let isInitialOrderLoad = true;
 db.collection("orders").onSnapshot((snapshot) => {
   if (isInitialOrderLoad) {
@@ -3575,15 +3575,21 @@ db.collection("orders").onSnapshot((snapshot) => {
     return;
   }
   snapshot.docChanges().forEach((change) => {
-    if (change.type === "added") {
-      playOrderNotificationSound();
-      const audioEl = document.getElementById('orderNotificationSound');
-      if (audioEl) {
-        audioEl.currentTime = 0;
-        audioEl.play().catch(err => console.log("Audio play deferred:", err));
+    if (change.type === "added" || change.type === "modified") {
+      // Direct audio element play
+      const sound = document.getElementById('orderNotificationSound');
+      if (sound) {
+        sound.currentTime = 0;
+        sound.play().catch(e => console.log("Audio play error:", e));
+      }
+      // Function call agar defined ho
+      if (typeof playOrderNotificationSound === 'function') {
+        playOrderNotificationSound();
       }
     }
   });
+}, (error) => {
+  console.error("Order listener error:", error);
 });
   // REALTIME GALLERY SYNC (PERSISTENT CLOUD & LOCAL STORAGE MERGE)
   db.collection("gallery").doc("customer_gallery").onSnapshot((doc) => {
@@ -5793,7 +5799,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.2"; // Ise Firebase ke latestVersion ("1.2") ke barabar kar dein
+  const currentVersion = "1.3"; // Ise Firebase ke latestVersion ("1.3") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
