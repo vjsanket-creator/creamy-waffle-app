@@ -3608,12 +3608,11 @@ db.collection("orders").onSnapshot((snapshot) => {
   });
 });
 
-// Function to show popup banner with customer name, full item names, and matching icons
+// Function to show popup banner with item name, exact selected flavor, and matching icons
 function showOrderAlertPopup(orderData) {
   const existingBanner = document.getElementById('orderAlertBanner');
   if (existingBanner) existingBanner.remove();
 
-  // Customer ka naam nikalne ke liye sabhi possible fields check karna
   let customerName = orderData.customerName || orderData.name || orderData.userName || orderData.fullName || "Customer";
 
   let itemsHtml = '';
@@ -3621,22 +3620,33 @@ function showOrderAlertPopup(orderData) {
 
   if (items.length > 0) {
     items.forEach(item => {
-      let itemName = item.name || item.title || item.itemName || (typeof item === 'string' ? item : "Item");
+      let rawName = item.name || item.title || item.itemName || (typeof item === 'string' ? item : "Item");
       let fileName = "waffle-logo.png"; // Default fallback icon
       
-      let lowerName = String(itemName).toLowerCase();
+      let lowerName = String(rawName).toLowerCase();
       if (lowerName.includes('popsi')) fileName = "POPSI ICON.png";
       else if (lowerName.includes('candy')) fileName = "CANDY ICON.png";
       else if (lowerName.includes('sandwich')) fileName = "SANDWICH ICON.png";
       else if (lowerName.includes('pan cake')) fileName = "PAN CAKE ICON.png";
       else if (lowerName.includes('bowl cake')) fileName = "BOWL CAKE ICON.png";
 
+      // Selected flavor ya sub-item nikalne ke liye sabhi possible fields check karna
+      let flavorText = item.flavor || item.flavour || item.selectedFlavor || item.selectedFlavour || item.selectedItem || item.subItem || item.variant || item.selectedOption || item.selectedSubItem || item.customization || "";
+      
+      // Agar flavor object ya alag format mein hai toh use string banana
+      if (typeof flavorText === 'object' && flavorText !== null) {
+        flavorText = flavorText.name || flavorText.title || "";
+      }
+
+      let flavorHtml = flavorText ? `<span style="font-size: 12px; color: #d63031; display: block; font-weight: 600; margin-top: 2px;">Flavor: ${flavorText}</span>` : "";
+
       itemsHtml += `
         <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px; background: #fdfdfd; padding: 10px 12px; border-radius: 10px; border: 1px solid #eee;">
-          <img src="${fileName}" alt="${itemName}" style="width: 42px; height: 42px; object-fit: contain; border-radius: 8px; flex-shrink: 0;" />
+          <img src="${fileName}" alt="${rawName}" style="width: 42px; height: 42px; object-fit: contain; border-radius: 8px; flex-shrink: 0;" />
           <div style="flex-grow: 1;">
-            <span style="font-size: 13px; font-weight: bold; color: #333; display: block; line-height: 1.3;">${itemName}</span>
-            <span style="font-size: 12px; color: #666; margin-top: 2px; display: block;">Qty: ${item.quantity || 1}</span>
+            <span style="font-size: 13px; font-weight: bold; color: #333; display: block; line-height: 1.3;">${rawName}</span>
+            ${flavorHtml}
+            <span style="font-size: 11px; color: #666; margin-top: 2px; display: block;">Qty: ${item.quantity || 1}</span>
           </div>
         </div>
       `;
@@ -5893,7 +5903,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.10"; // Ise Firebase ke latestVersion ("1.10") ke barabar kar dein
+  const currentVersion = "1.11"; // Ise Firebase ke latestVersion ("1.11") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
