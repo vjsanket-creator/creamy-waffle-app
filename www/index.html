@@ -3567,14 +3567,49 @@ function toggleGeneralStock(typeKey, category, index) {
       console.log("Audio play error:", e);
     }
   }
-// Firestore Listener with Push Notifications & Sound (WhatsApp style notification)
+// Final Integrated Firestore Listener with Service Worker Push Notifications
 let isInitialOrderLoad = true;
+let notificationSound = document.getElementById('orderNotificationSound');
 
-// Page load hote hi notification permission mangne ke liye
-if (window.Notification && Notification.permission !== "granted") {
-  Notification.requestPermission();
+// 1. Notification aur Service Worker Registration (Pehle se registered check karein)
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+  navigator.serviceWorker.register('/service-worker.js') // Aapko root directory mein ek empty service-worker.js file banani padegi
+    .then(function(swReg) {
+      console.log('Service Worker Registered:', swReg);
+      // Permission mangne ke liye
+      if (Notification.permission !== 'granted') {
+        Notification.requestPermission().then(function(permission) {
+          if (permission === 'granted') {
+            console.log('Notification permission granted.');
+          }
+        });
+      }
+    })
+    .catch(function(error) {
+      console.error('Service Worker Registration Failed:', error);
+    });
 }
 
+// Helper function to show notification (agar Service Worker se push nahi ho raha ho toh fallback)
+function showSystemNotification(title, body) {
+  if (Notification.permission === "granted") {
+    navigator.serviceWorker.getRegistration().then(function(reg) {
+      if (reg) {
+        reg.showNotification(title, {
+          body: body,
+          icon: 'waffle-logo.png', // Apna logo icon path sahi karein
+          badge: 'waffle-logo.png',
+          tag: 'new-order',
+          vibrate: [200, 100, 200] // Vibration pattern
+        });
+      } else {
+        new Notification(title, { body: body, icon: 'waffle-logo.png' }); // Fallback
+      }
+    });
+  }
+}
+
+// 2. Firestore Listener
 db.collection("orders").onSnapshot((snapshot) => {
   if (isInitialOrderLoad) {
     isInitialOrderLoad = false;
@@ -3583,22 +3618,16 @@ db.collection("orders").onSnapshot((snapshot) => {
   snapshot.docChanges().forEach((change) => {
     if (change.type === "added") {
       // 1. Bell Sound Play karne ke liye
-      const sound = document.getElementById('orderNotificationSound');
-      if (sound) {
-        sound.currentTime = 0;
-        sound.play().catch(e => console.log("Audio play error:", e));
+      if (notificationSound) {
+        notificationSound.currentTime = 0;
+        notificationSound.play().catch(e => console.log("Audio play error:", e));
       }
       if (typeof playOrderNotificationSound === 'function') {
         playOrderNotificationSound();
       }
 
-      // 2. Mobile screen par WhatsApp jaisa Notification popup dikhane ke liye
-      if (window.Notification && Notification.permission === "granted") {
-        new Notification("Creamy Waffle 🧇", {
-          body: "Ek naya order aaya hai! Turant check karein.",
-          icon: "waffle-logo.png"
-        });
-      }
+      // 2. Mobile screen par Notification popup dikhane ke liye (Integrated)
+      showSystemNotification("Creamy Waffle 🧇 New Order!", "Ek naya order aaya hai! Turant accept karein.");
     }
   });
 });
@@ -5810,7 +5839,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.4"; // Ise Firebase ke latestVersion ("1.4") ke barabar kar dein
+  const currentVersion = "1.5"; // Ise Firebase ke latestVersion ("1.5") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
