@@ -3608,7 +3608,7 @@ db.collection("orders").onSnapshot((snapshot) => {
   });
 });
 
-// Function to show popup banner with icons, names, and selected flavors
+// Updated function to handle item names and extract flavors correctly
 function showOrderAlertPopup(orderData) {
   const existingBanner = document.getElementById('orderAlertBanner');
   if (existingBanner) existingBanner.remove();
@@ -3618,18 +3618,26 @@ function showOrderAlertPopup(orderData) {
 
   if (items.length > 0) {
     items.forEach(item => {
-      let itemName = item.name || item.title || "Item";
+      let rawName = item.name || item.title || "Item";
       let fileName = "waffle-logo.png"; // Default fallback icon
       
-      let lowerName = itemName.toLowerCase();
+      let lowerName = rawName.toLowerCase();
       if (lowerName.includes('popsi')) fileName = "POPSI ICON.png";
       else if (lowerName.includes('candy')) fileName = "CANDY ICON.png";
       else if (lowerName.includes('sandwich')) fileName = "SANDWICH ICON.png";
       else if (lowerName.includes('pan cake')) fileName = "PAN CAKE ICON.png";
       else if (lowerName.includes('bowl cake')) fileName = "BOWL CAKE ICON.png";
 
-      // Customer ne jo flavour select kiya hai use nikalne ke liye
-      let flavorText = item.flavor || item.variant || item.selectedFlavor || item.customization || "";
+      // Flavor extract karne ke liye (agar name mein '-' ho ya alag property ho)
+      let itemName = rawName;
+      let flavorText = item.flavor || item.variant || item.selectedFlavor || item.selectedFlavour || "";
+      
+      if (!flavorText && rawName.includes('-')) {
+        let parts = rawName.split('-');
+        itemName = parts[0].trim();
+        flavorText = parts.slice(1).join('-').trim();
+      }
+
       let flavorHtml = flavorText ? `<span style="font-size: 11px; color: #d63031; display: block; font-weight: 600;">Flavor: ${flavorText}</span>` : "";
 
       itemsHtml += `
@@ -5892,7 +5900,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.8"; // Ise Firebase ke latestVersion ("1.8") ke barabar kar dein
+  const currentVersion = "1.9"; // Ise Firebase ke latestVersion ("1.9") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
