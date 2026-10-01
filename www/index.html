@@ -3567,18 +3567,31 @@ function toggleGeneralStock(typeKey, category, index) {
       console.log("Audio play error:", e);
     }
   }
-// Firestore Listener with Dynamic Ordered Items Icons Popup & Bell Sound
+// Firestore Listener with Multi-Order Support, Flavor Display & Bell Sound
 let isInitialOrderLoad = true;
+let lastProcessedOrderId = "";
 
 db.collection("orders").onSnapshot((snapshot) => {
   if (isInitialOrderLoad) {
     isInitialOrderLoad = false;
+    // Pehle se mojood latest order ki ID save kar lein taaki purane orders par alert na baje
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === "added") {
+        lastProcessedOrderId = change.doc.id;
+      }
+    });
     return;
   }
+  
   snapshot.docChanges().forEach((change) => {
     if (change.type === "added") {
+      const orderId = change.doc.id;
       const orderData = change.doc.data();
       
+      // Har naye order ko uniquely detect karne ke liye
+      if (orderId === lastProcessedOrderId) return;
+      lastProcessedOrderId = orderId;
+
       // 1. Bell Sound Play karne ke liye
       const sound = document.getElementById('orderNotificationSound');
       if (sound) {
@@ -3589,18 +3602,17 @@ db.collection("orders").onSnapshot((snapshot) => {
         playOrderNotificationSound();
       }
 
-      // 2. Popup mein ordered items aur unke icons dikhane ke liye
+      // 2. Popup mein icons, names aur flavor dikhane ke liye
       showOrderAlertPopup(orderData);
     }
   });
 });
 
-// Function to show popup banner with item icons and names
+// Function to show popup banner with icons, names, and selected flavors
 function showOrderAlertPopup(orderData) {
   const existingBanner = document.getElementById('orderAlertBanner');
   if (existingBanner) existingBanner.remove();
 
-  // Order items extract karna
   let itemsHtml = '';
   const items = orderData.items || orderData.cartItems || [];
 
@@ -3610,18 +3622,22 @@ function showOrderAlertPopup(orderData) {
       let fileName = "waffle-logo.png"; // Default fallback icon
       
       let lowerName = itemName.toLowerCase();
-      // Files ke exact naam aur .png extension ke sath
       if (lowerName.includes('popsi')) fileName = "POPSI ICON.png";
       else if (lowerName.includes('candy')) fileName = "CANDY ICON.png";
       else if (lowerName.includes('sandwich')) fileName = "SANDWICH ICON.png";
       else if (lowerName.includes('pan cake')) fileName = "PAN CAKE ICON.png";
       else if (lowerName.includes('bowl cake')) fileName = "BOWL CAKE ICON.png";
-      
+
+      // Customer ne jo flavour select kiya hai use nikalne ke liye
+      let flavorText = item.flavor || item.variant || item.selectedFlavor || item.customization || "";
+      let flavorHtml = flavorText ? `<span style="font-size: 11px; color: #d63031; display: block; font-weight: 600;">Flavor: ${flavorText}</span>` : "";
+
       itemsHtml += `
         <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px; background: #fdfdfd; padding: 8px 12px; border-radius: 10px; border: 1px solid #eee;">
           <img src="${fileName}" alt="${itemName}" style="width: 40px; height: 40px; object-fit: contain; border-radius: 8px;" />
           <div style="flex-grow: 1;">
             <span style="font-size: 14px; font-weight: bold; color: #333; display: block;">${itemName}</span>
+            ${flavorHtml}
             <span style="font-size: 12px; color: #666;">Qty: ${item.quantity || 1}</span>
           </div>
         </div>
@@ -3662,7 +3678,6 @@ function showOrderAlertPopup(orderData) {
 
   document.body.appendChild(banner);
 
-  // 15 seconds baad auto-remove
   setTimeout(() => {
     if (banner && banner.parentNode) {
       banner.remove();
@@ -5877,7 +5892,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.7"; // Ise Firebase ke latestVersion ("1.7") ke barabar kar dein
+  const currentVersion = "1.8"; // Ise Firebase ke latestVersion ("1.8") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
