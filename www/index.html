@@ -3567,49 +3567,9 @@ function toggleGeneralStock(typeKey, category, index) {
       console.log("Audio play error:", e);
     }
   }
-// Final Integrated Firestore Listener with Service Worker Push Notifications
+// Firestore Listener with In-App Visual Alert Popup & Bell Sound
 let isInitialOrderLoad = true;
-let notificationSound = document.getElementById('orderNotificationSound');
 
-// 1. Notification aur Service Worker Registration (Pehle se registered check karein)
-if ('serviceWorker' in navigator && 'PushManager' in window) {
-  navigator.serviceWorker.register('/service-worker.js') // Aapko root directory mein ek empty service-worker.js file banani padegi
-    .then(function(swReg) {
-      console.log('Service Worker Registered:', swReg);
-      // Permission mangne ke liye
-      if (Notification.permission !== 'granted') {
-        Notification.requestPermission().then(function(permission) {
-          if (permission === 'granted') {
-            console.log('Notification permission granted.');
-          }
-        });
-      }
-    })
-    .catch(function(error) {
-      console.error('Service Worker Registration Failed:', error);
-    });
-}
-
-// Helper function to show notification (agar Service Worker se push nahi ho raha ho toh fallback)
-function showSystemNotification(title, body) {
-  if (Notification.permission === "granted") {
-    navigator.serviceWorker.getRegistration().then(function(reg) {
-      if (reg) {
-        reg.showNotification(title, {
-          body: body,
-          icon: 'waffle-logo.png', // Apna logo icon path sahi karein
-          badge: 'waffle-logo.png',
-          tag: 'new-order',
-          vibrate: [200, 100, 200] // Vibration pattern
-        });
-      } else {
-        new Notification(title, { body: body, icon: 'waffle-logo.png' }); // Fallback
-      }
-    });
-  }
-}
-
-// 2. Firestore Listener
 db.collection("orders").onSnapshot((snapshot) => {
   if (isInitialOrderLoad) {
     isInitialOrderLoad = false;
@@ -3618,19 +3578,67 @@ db.collection("orders").onSnapshot((snapshot) => {
   snapshot.docChanges().forEach((change) => {
     if (change.type === "added") {
       // 1. Bell Sound Play karne ke liye
-      if (notificationSound) {
-        notificationSound.currentTime = 0;
-        notificationSound.play().catch(e => console.log("Audio play error:", e));
+      const sound = document.getElementById('orderNotificationSound');
+      if (sound) {
+        sound.currentTime = 0;
+        sound.play().catch(e => console.log("Audio play error:", e));
       }
       if (typeof playOrderNotificationSound === 'function') {
         playOrderNotificationSound();
       }
 
-      // 2. Mobile screen par Notification popup dikhane ke liye (Integrated)
-      showSystemNotification("Creamy Waffle 🧇 New Order!", "Ek naya order aaya hai! Turant accept karein.");
+      // 2. Screen par WhatsApp/Native style ka bada Floating Popup banner dikhane ke liye
+      showOrderAlertPopup();
     }
   });
 });
+
+// Function to show gorgeous in-app popup banner
+function showOrderAlertPopup() {
+  // Agar pehle se popup hai toh use hata dein
+  const existingBanner = document.getElementById('orderAlertBanner');
+  if (existingBanner) existingBanner.remove();
+
+  const banner = document.createElement('div');
+  banner.id = 'orderAlertBanner';
+  banner.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    color: #333333;
+    padding: 18px 24px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-left: 6px solid #ff6b6b;
+    width: 90%;
+    max-width: 400px;
+    animation: slideDown 0.4s ease-out;
+  `;
+
+  banner.innerHTML = `
+    <div style="font-size: 32px;">🧇</div>
+    <div style="flex-grow: 1;">
+      <h4 style="margin: 0 0 4px 0; font-size: 16px; color: #d63031; font-weight: bold;">New Order Received!</h4>
+      <p style="margin: 0; font-size: 13px; color: #555555;">Ek naya order aaya hai! Turant check karein.</p>
+    </div>
+    <button onclick="document.getElementById('orderAlertBanner').remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #888;">✕</button>
+  `;
+
+  document.body.appendChild(banner);
+
+  // Auto remove after 10 seconds if not closed
+  setTimeout(() => {
+    if (banner && banner.parentNode) {
+      banner.remove();
+    }
+  }, 10000);
+}
   // REALTIME GALLERY SYNC (PERSISTENT CLOUD & LOCAL STORAGE MERGE)
   db.collection("gallery").doc("customer_gallery").onSnapshot((doc) => {
     let cloudGallery = [];
@@ -5839,7 +5847,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.5"; // Ise Firebase ke latestVersion ("1.5") ke barabar kar dein
+  const currentVersion = "1.6"; // Ise Firebase ke latestVersion ("1.6") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
