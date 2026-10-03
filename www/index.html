@@ -3608,7 +3608,7 @@ db.collection("orders").onSnapshot((snapshot) => {
   });
 });
 
-// Function to show popup banner with item name, exact selected flavor, and matching icons
+// Function to show popup banner with larger font size for customer name and items
 function showOrderAlertPopup(orderData) {
   const existingBanner = document.getElementById('orderAlertBanner');
   if (existingBanner) existingBanner.remove();
@@ -3630,23 +3630,21 @@ function showOrderAlertPopup(orderData) {
       else if (lowerName.includes('pan cake')) fileName = "PAN CAKE ICON.png";
       else if (lowerName.includes('bowl cake')) fileName = "BOWL CAKE ICON.png";
 
-      // Selected flavor ya sub-item nikalne ke liye sabhi possible fields check karna
       let flavorText = item.flavor || item.flavour || item.selectedFlavor || item.selectedFlavour || item.selectedItem || item.subItem || item.variant || item.selectedOption || item.selectedSubItem || item.customization || "";
       
-      // Agar flavor object ya alag format mein hai toh use string banana
       if (typeof flavorText === 'object' && flavorText !== null) {
         flavorText = flavorText.name || flavorText.title || "";
       }
 
-      let flavorHtml = flavorText ? `<span style="font-size: 12px; color: #d63031; display: block; font-weight: 600; margin-top: 2px;">Flavor: ${flavorText}</span>` : "";
+      let flavorHtml = flavorText ? `<span style="font-size: 13px; color: #d63031; display: block; font-weight: 600; margin-top: 3px;">Flavor: ${flavorText}</span>` : "";
 
       itemsHtml += `
         <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px; background: #fdfdfd; padding: 10px 12px; border-radius: 10px; border: 1px solid #eee;">
-          <img src="${fileName}" alt="${rawName}" style="width: 42px; height: 42px; object-fit: contain; border-radius: 8px; flex-shrink: 0;" />
+          <img src="${fileName}" alt="${rawName}" style="width: 44px; height: 44px; object-fit: contain; border-radius: 8px; flex-shrink: 0;" />
           <div style="flex-grow: 1;">
-            <span style="font-size: 13px; font-weight: bold; color: #333; display: block; line-height: 1.3;">${rawName}</span>
+            <span style="font-size: 14px; font-weight: bold; color: #333; display: block; line-height: 1.3;">${rawName}</span>
             ${flavorHtml}
-            <span style="font-size: 11px; color: #666; margin-top: 2px; display: block;">Qty: ${item.quantity || 1}</span>
+            <span style="font-size: 12px; color: #666; margin-top: 3px; display: block;">Qty: ${item.quantity || 1}</span>
           </div>
         </div>
       `;
@@ -3664,7 +3662,7 @@ function showOrderAlertPopup(orderData) {
     transform: translateX(-50%);
     background: #ffffff;
     color: #333333;
-    padding: 16px 20px;
+    padding: 18px 20px;
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     z-index: 999999;
@@ -3675,12 +3673,12 @@ function showOrderAlertPopup(orderData) {
   `;
 
   banner.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 6px;">
-      <h4 style="margin: 0; font-size: 15px; color: #d63031; font-weight: bold;">🧇 New Order Received!</h4>
-      <button onclick="document.getElementById('orderAlertBanner').remove()" style="background: none; border: none; font-size: 16px; cursor: pointer; color: #888;">✕</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+      <h4 style="margin: 0; font-size: 16px; color: #d63031; font-weight: bold;">🧇 New Order Received!</h4>
+      <button onclick="document.getElementById('orderAlertBanner').remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #888;">✕</button>
     </div>
-    <div style="margin-bottom: 8px; font-size: 13px; font-weight: bold; color: #222;">
-      Customer: <span style="color: #007bff; font-weight: normal;">${customerName}</span>
+    <div style="margin-bottom: 12px; font-size: 15px; font-weight: bold; color: #333;">
+      Customer: <span style="color: #007bff; font-weight: bold; font-size: 18px;">${customerName}</span>
     </div>
     <div style="max-height: 220px; overflow-y: auto;">
       ${itemsHtml}
@@ -5903,7 +5901,7 @@ checkAppVersion();
 
 // Yahan apna naya wala version check code daal dein:
 async function checkAppVersion() {
-  const currentVersion = "1.11"; // Ise Firebase ke latestVersion ("1.11") ke barabar kar dein
+  const currentVersion = "1.12"; // Ise Firebase ke latestVersion ("1.12") ke barabar kar dein
   try {
     if (typeof firebase !== 'undefined' && firebase.firestore) {
       const db = firebase.firestore();
