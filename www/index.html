@@ -5899,53 +5899,50 @@ loadPaymentQrCode();
 checkAuthState();
 checkAppVersion();
 
-// Yahan apna naya wala version check code daal dein:
+// --- APP VERSION CHECK & UPDATE POPUP MECHANISM ---
 async function checkAppVersion() {
-  const currentVersion = "1.12"; // Ise Firebase ke latestVersion ("1.12") ke barabar kar dein
+  const currentVersion = "1.13"; // Aapke app ka current version
   try {
-    if (typeof firebase !== 'undefined' && firebase.firestore) {
-      const db = firebase.firestore();
-      const docRef = db.collection('menu').doc('app_version'); // Yahan underscore sahi kar diya hai
-      const docSnap = await docRef.get();
+    if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+      const dbRef = firebase.firestore();
+      const docSnap = await dbRef.collection('menu').doc('app_version').get();
       
       if (docSnap.exists) {
         const data = docSnap.data();
         const latestVersion = data.latestVersion;
-        const updateMessage = data.updateMessage || "Naya update aagaya hai!";
-        const androidUrl = data.androidUrl || "#";
-        const iosUrl = data.iosUrl || "#";
+        const updateMessage = data.updateMessage || "Creamy Waffle ka naya update aa gaya hai! Naye features ke liye update karein. 🧇✨";
+        const downloadUrl = data.downloadUrl || data.androidUrl || "#";
         
-        // Check if update is needed and user hasn't skipped this version
+        // Check if user has already skipped this version in current session
         const skippedVersion = sessionStorage.getItem('skipped_version');
+        
         if (latestVersion && latestVersion !== currentVersion && skippedVersion !== latestVersion) {
-          showUpdatePopup(updateMessage, androidUrl, iosUrl, latestVersion);
+          showUpdatePopup(updateMessage, downloadUrl, latestVersion);
         }
       }
     }
   } catch (error) {
-    console.error("Version check error:", error);
+    console.log("Version check background error:", error);
   }
 }
 
-function showUpdatePopup(msg, androidLink, iosLink, ver) {
+function showUpdatePopup(msg, downloadLink, ver) {
+  // Purana popup agar ho toh remove kar dein
   let existingOverlay = document.getElementById('appUpdateModalOverlay');
   if (existingOverlay) existingOverlay.remove();
-
-  const isAndroid = /Android/i.test(navigator.userAgent);
-  const downloadLink = isAndroid ? androidLink : iosLink;
 
   const overlay = document.createElement('div');
   overlay.id = 'appUpdateModalOverlay';
   overlay.style.cssText = `
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-    z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px;
+    background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+    z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 20px;
   `;
 
   overlay.innerHTML = `
     <div style="background: #ffffff; width: 100%; max-width: 340px; border-radius: 28px; padding: 24px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 2px solid #fed7aa;">
-      <div style="font-size: 40px; margin-bottom: 10px;">🚀</div>
-      <h3 style="font-size: 20px; font-weight: 900; color: #7c2d12; margin-bottom: 8px;">Update Available! (v${ver})</h3>
+      <div style="font-size: 44px; margin-bottom: 8px;">🚀</div>
+      <h3 style="font-size: 20px; font-weight: 900; color: #7c2d12; margin-bottom: 8px;">New Update Available! (v${ver})</h3>
       <p style="font-size: 13px; color: #4b5563; font-weight: 600; line-height: 1.4; margin-bottom: 20px;">${msg}</p>
       
       <a href="${downloadLink}" target="_blank" style="display: block; background: #ea580c; color: white; text-decoration: none; padding: 12px; border-radius: 16px; font-size: 14px; font-weight: 800; box-shadow: 0 4px 12px rgba(234,88,12,0.4); margin-bottom: 10px;">
@@ -5961,6 +5958,7 @@ function showUpdatePopup(msg, androidLink, iosLink, ver) {
   document.body.appendChild(overlay);
 }
 
+// App load hone ke 1.5 seconds baad version check trigger hoga
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(checkAppVersion, 1500);
 });
