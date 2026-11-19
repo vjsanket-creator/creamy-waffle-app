@@ -1827,32 +1827,227 @@
     z-index: 290;
 }
 
-/* Mulund East Location and Shifted NO MAIDA Badge CSS */
-.shop-location-sub {
-  display: block;
-  font-size: 18px;
-  font-weight: 800;
-  color: #9a3412;
-  margin-top: 20px;
-  margin-bottom: 4px;
-  letter-spacing: 0.5px;
+/* (Mulund East) + NO MAIDA + Shop Open/Close ek hi row mein */
+#locationMaidaInlineWrap {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+  margin-top: 8px !important;
+  margin-bottom: 4px !important;
+  width: 100% !important;
 }
 
-.no-maida-badge-text {
-  display: block;
-  width: max-content;
+.shop-location-sub {
+  display: inline-block !important;
+  font-size: 15px !important;
+  font-weight: 800;
+  color: #9a3412;
+  margin: 0 !important;
+  letter-spacing: 0.2px;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.maida-shop-row {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  margin: 0 !important;
+  flex-wrap: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.maida-shop-row .no-maida-badge-text {
+  display: inline-block !important;
+  width: max-content !important;
   background: linear-gradient(135deg, #fef08a, #fde047);
   color: #b91c1c;
   font-weight: 900;
-  font-size: 11px;
-  padding: 3px 7px;
-  border-radius: 6px;
-  border: 2px dashed #dc2626;
+  font-size: 8.5px !important;
+  padding: 2px 5px !important;
+  border-radius: 5px;
+  border: 1.5px dashed #dc2626;
   transform: rotate(2deg);
-  margin-top: -25px;
-  margin-left: 150px; /* Isse badge ko right side shift kiya gaya hai */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  margin: 0 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  white-space: nowrap !important;
 }
+
+.shop-status-switch-group {
+  display: inline-flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 3px !important;
+}
+
+.shop-status-switch-group .shop-toggle-pill,
+.shop-toggle-pill {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 4px !important;
+  padding: 3px 7px 3px 4px !important;
+  border-radius: 999px !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  width: auto !important;
+  min-width: fit-content !important;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+}
+
+.shop-toggle-pill .power-dot {
+  order: -1 !important; /* Dono icons left side mein */
+  position: static !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 13px !important;
+  height: 13px !important;
+  min-width: 13px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  font-size: 8.5px !important;
+  font-weight: 900 !important;
+  margin: 0 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* Shop Open button pattern */
+.shop-toggle-pill.open-btn {
+  background: #e5e7eb !important;
+  color: #1f2937 !important;
+  border: 1.5px solid #cbd5e1 !important;
+}
+.shop-toggle-pill.open-btn .power-dot {
+  color: #16a34a !important;
+}
+.shop-toggle-pill.open-btn.active {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+  color: #ffffff !important;
+  border-color: #86efac !important;
+}
+
+/* Shop Close button - same pill pattern as Shop Open */
+.shop-toggle-pill.close-btn {
+  background: #e5e7eb !important;
+  color: #1f2937 !important;
+  border: 1.5px solid #cbd5e1 !important;
+}
+.shop-toggle-pill.close-btn .power-dot {
+  color: #dc2626 !important;
+}
+.shop-toggle-pill.close-btn.active {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+  color: #ffffff !important;
+  border-color: #fca5a5 !important;
+}
+
+/* Shop Closed hone par items & ordering disabled look */
+body.shop-is-closed .hero-card,
+body.shop-is-closed .popsi-item-row,
+body.shop-is-closed .popsi-bottom-action-bar button,
+body.shop-is-closed .checkout-action-btn,
+body.shop-is-closed .btn-submit[onclick*="confirmAndPlaceOrder"] {
+  opacity: 0.45 !important;
+  filter: grayscale(65%);
+}
+
+    .shop-status-switch-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .shop-toggle-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      user-select: none;
+    }
+
+    .shop-toggle-pill .power-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 900;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    .shop-toggle-pill.open-btn {
+      background: #e5e7eb;
+      color: #374151;
+      border-color: #d1d5db;
+    }
+    .shop-toggle-pill.open-btn .power-dot {
+      color: #16a34a;
+    }
+    .shop-toggle-pill.open-btn.active {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: #ffffff;
+      border-color: #86efac;
+      box-shadow: 0 3px 10px rgba(22, 163, 74, 0.45);
+    }
+
+    .shop-toggle-pill.close-btn {
+      background: #374151;
+      color: #f9fafb;
+      border-color: #1f2937;
+    }
+    .shop-toggle-pill.close-btn .power-dot {
+      color: #dc2626;
+    }
+    .shop-toggle-pill.close-btn.active {
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      color: #ffffff;
+      border-color: #fca5a5;
+      box-shadow: 0 3px 10px rgba(220, 38, 38, 0.45);
+    }
+
+    /* Customer Shop Closed Banner & Disabled State */
+    .shop-closed-banner {
+      margin: 8px 20px 4px;
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      border: 1.5px solid #ef4444;
+      color: #991b1b;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 800;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+    }
+
+    body.shop-is-closed .hero-card,
+    body.shop-is-closed .popsi-item-row,
+    body.shop-is-closed .popsi-bottom-action-bar button,
+    body.shop-is-closed .checkout-action-btn,
+    body.shop-is-closed .btn-submit[onclick*="confirmAndPlaceOrder"] {
+      opacity: 0.55;
+      cursor: not-allowed !important;
+    }
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -2067,7 +2262,19 @@
         </div>
 
         <span class="shop-location-sub" style="margin-top: 4px;">(Mulund East)</span>
-        <span class="no-maida-badge-text">🚫 NO MAIDA</span>
+        <div class="maida-shop-row" id="maidaShopRow">
+          <span class="no-maida-badge-text">🚫 NO MAIDA</span>
+          <div class="shop-status-switch-group" id="adminShopStatusControls" style="display:none;">
+            <button type="button" class="shop-toggle-pill open-btn active" id="btnShopOpen" onclick="setShopStatus(true)">
+              <span>Shop Open</span>
+              <span class="power-dot">⏻</span>
+            </button>
+            <button type="button" class="shop-toggle-pill close-btn" id="btnShopClose" onclick="setShopStatus(false)">
+              <span class="power-dot">⏻</span>
+              <span>Shop Close</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Profile Logo upar right corner mein -->
@@ -2075,6 +2282,10 @@
     </div>
 
     <!-- SEARCH SECTION -->
+     <div class="shop-closed-banner" id="shopClosedBanner">
+      <span>🔒 <b>Shop is Currently Closed!</b> Ordering is temporarily disabled.</span>
+    </div>
+
     <div class="search-section">
       <div class="search-box">
         🔍 
@@ -2504,7 +2715,7 @@
           📱 Pay via GPay / PhonePe App Directly
         </a>
       </div>
-
+      
       <button class="btn-submit" onclick="confirmAndPlaceOrder()">Confirm & Place Order 🚀</button>
     </div>
   </div>
@@ -3776,6 +3987,12 @@ function showOrderAlertPopup(orderData) {
   db.collection("menu").doc("store_config").onSnapshot((doc) => {
   if (doc.exists) {
     const data = doc.data();
+
+    if (typeof data.isShopOpen === 'boolean') {
+      isShopOpen = data.isShopOpen;
+      localStorage.setItem('paras_shop_open', JSON.stringify(isShopOpen));
+      applyShopStatusUI();
+    }
     // --- LOAD CLOUD BG IF EXISTS ---
     if (data.customBg !== undefined) {
       if (data.customBg) {
@@ -3809,17 +4026,14 @@ function showOrderAlertPopup(orderData) {
   }
 });
 
-  function syncMenuToCloud() {
+ function syncMenuToCloud() {
     db.collection("menu").doc("store_config").set({
       categories: categories,
       products: products,
       fontSettings: fontSettings,
+      isShopOpen: isShopOpen,
       lastUpdated: Date.now()
-    }).catch(err => console.log("Cloud sync error:", err));
-  }
-
-  function syncOrderToCloud(orderObj) {
-    db.collection("orders").doc(orderObj.orderId).set(orderObj);
+    }, { merge: true }).catch(err => console.log("Cloud sync error:", err));
   }
 
   function deleteOrderFromCloud(orderId, firestoreId) {
@@ -4531,8 +4745,10 @@ function showOrderAlertPopup(orderData) {
   }
 
   function loadProfilePhoto() {
-    document.getElementById('profileImg').src = DEFAULT_LOGO;
-    document.getElementById('authLogoImg').src = DEFAULT_LOGO;
+    const profileImg = document.getElementById('profileImg');
+    const authLogoImg = document.getElementById('authLogoImg');
+    if (profileImg) profileImg.src = DEFAULT_LOGO;
+    if (authLogoImg) authLogoImg.src = DEFAULT_LOGO;
   }
 
   function compressImage(file, maxWidth, quality, callback) {
@@ -4696,6 +4912,92 @@ function showOrderAlertPopup(orderData) {
   }
 
   let draggedProductIndex = null;
+
+  let isShopOpen = JSON.parse(localStorage.getItem('paras_shop_open'));
+  if (typeof isShopOpen !== 'boolean') {
+    isShopOpen = true;
+  }
+
+  function setShopStatus(openState) {
+    if (!currentUser || currentUser.role !== 'admin') {
+      alert("Only Admin can change Shop Open / Close status!");
+      return;
+    }
+    isShopOpen = Boolean(openState);
+    localStorage.setItem('paras_shop_open', JSON.stringify(isShopOpen));
+    if (typeof renderDynamicFullMenu === 'function') {
+      renderDynamicFullMenu();
+    }
+    applyShopStatusUI();
+    syncMenuToCloud();
+    alert(isShopOpen ? "🟢 Shop is now OPEN! Customers can place orders." : "🔴 Shop is now CLOSED! Customer ordering options are disabled.");
+  }
+
+  function applyShopStatusUI() {
+    const isAdmin = currentUser && currentUser.role === 'admin';
+    const adminControls = document.getElementById('adminShopStatusControls');
+    const openBtn = document.getElementById('btnShopOpen');
+    const closeBtn = document.getElementById('btnShopClose');
+    const closedBanner = document.getElementById('shopClosedBanner');
+    const maidaBadge = document.querySelector('.no-maida-badge-text');
+    const maidaShopRow = document.getElementById('maidaShopRow');
+
+    if (maidaBadge && maidaShopRow && maidaBadge.parentElement !== maidaShopRow) {
+      maidaShopRow.insertBefore(maidaBadge, maidaShopRow.firstChild);
+    }
+const locationSub = document.querySelector('.shop-location-sub');
+    if (locationSub && maidaShopRow) {
+      let wrap = document.getElementById('locationMaidaInlineWrap');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'locationMaidaInlineWrap';
+        locationSub.parentNode.insertBefore(wrap, locationSub);
+        wrap.appendChild(locationSub);
+        wrap.appendChild(maidaShopRow);
+      }
+    }
+    if (adminControls) {
+      adminControls.style.display = isAdmin ? 'inline-flex' : 'none';
+    }
+    if (openBtn && closeBtn) {
+      openBtn.classList.toggle('active', isShopOpen === true);
+      closeBtn.classList.toggle('active', isShopOpen === false);
+    }
+
+    // Shop Close hone par items & ordering options disabled dikhayein
+    const isShopClosed = !isShopOpen;
+    document.body.classList.toggle('shop-is-closed', isShopClosed);
+
+    if (closedBanner) {
+      closedBanner.style.display = isShopClosed ? 'flex' : 'none';
+    }
+
+    // Menu checkboxes & buttons disable/enable karein
+    document.querySelectorAll('.popsi-checkbox').forEach(chk => {
+      const rowOutOfStock = chk.closest('.popsi-item-row')?.classList.contains('out-of-stock');
+      chk.disabled = isShopClosed || Boolean(rowOutOfStock);
+      if (isShopClosed) chk.checked = false;
+    });
+
+    if (typeof updatePopsiSelectedCount === 'function') {
+      updatePopsiSelectedCount();
+    }
+
+    const addSelectedBtn = document.querySelector('#popsiMenuOverlay .popsi-bottom-action-bar button');
+    if (addSelectedBtn) {
+      addSelectedBtn.disabled = isShopClosed;
+    }
+
+    const checkoutBtn = document.querySelector('.checkout-action-btn');
+    if (checkoutBtn) {
+      checkoutBtn.disabled = isShopClosed;
+    }
+
+    const confirmOrderBtn = document.querySelector('.btn-submit[onclick*="confirmAndPlaceOrder"]');
+    if (confirmOrderBtn) {
+      confirmOrderBtn.disabled = isShopClosed;
+    }
+  }
 
   function renderProducts(filterText = '') {
     const cardsCarousel = document.getElementById('cardsCarousel');
@@ -5521,6 +5823,10 @@ function showOrderAlertPopup(orderData) {
   }
 
   function confirmAndPlaceOrder() {
+    if (!isShopOpen && (!currentUser || currentUser.role !== 'admin')) {
+        alert("🔒 Shop is currently CLOSED! Orders cannot be placed right now.");
+        return;
+    }
     const custName = document.getElementById('custNameInput').value.trim();
     const custPhone = document.getElementById('custPhoneInput').value.trim();
 
@@ -5897,11 +6203,12 @@ loadProfilePhoto();
 loadCustomBg();
 loadPaymentQrCode();
 checkAuthState();
+applyShopStatusUI();
 checkAppVersion();
 
 // --- APP VERSION CHECK & UPDATE POPUP MECHANISM ---
 async function checkAppVersion() {
-  const currentVersion = "1.13"; // Aapke app ka current version
+  const currentVersion = "1.14"; // Aapke app ka current version
   try {
     if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
       const dbRef = firebase.firestore();
