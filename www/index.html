@@ -1903,20 +1903,25 @@
 }
 
 .shop-toggle-pill .power-dot {
-  order: -1 !important; /* Icon left side mein */
-  position: static !important;
+  order: -1 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 17px !important;            /* Circle size bada */
-  height: 17px !important;
-  min-width: 17px !important;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
   border-radius: 50% !important;
   background: #ffffff !important;
-  font-size: 10.5px !important;      /* Power symbol size bada */
-  font-weight: 900 !important;
+  padding: 0 !important;
   margin: 0 !important;
+  overflow: hidden !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.shop-toggle-pill .power-dot svg {
+  display: block !important;
+  width: 11px !important;
+  height: 11px !important;
 }
 
 /* Shop Open button pattern */
@@ -2267,13 +2272,23 @@ body.shop-is-closed .btn-submit[onclick*="confirmAndPlaceOrder"] {
           <span class="no-maida-badge-text">🚫 NO MAIDA</span>
           <div class="shop-status-switch-group" id="adminShopStatusControls" style="display:none;">
             <button type="button" class="shop-toggle-pill open-btn active" id="btnShopOpen" onclick="setShopStatus(true)">
-              <span>Shop Open</span>
-              <span class="power-dot">⏻</span>
-            </button>
-            <button type="button" class="shop-toggle-pill close-btn" id="btnShopClose" onclick="setShopStatus(false)">
-              <span class="power-dot">⏻</span>
-              <span>Shop Close</span>
-            </button>
+        <span>Shop Open</span>
+        <span class="power-dot" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v9"></path>
+            <path d="M6.3 6.3a8 8 0 1 0 11.4 0"></path>
+          </svg>
+        </span>
+      </button>
+      <button type="button" class="shop-toggle-pill close-btn" id="btnShopClose" onclick="setShopStatus(false)">
+        <span class="power-dot" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#dc2626" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v9"></path>
+            <path d="M6.3 6.3a8 8 0 1 0 11.4 0"></path>
+          </svg>
+        </span>
+        <span>Shop Close</span>
+      </button>
           </div>
         </div>
       </div>
@@ -6209,7 +6224,7 @@ checkAppVersion();
 
 // --- APP VERSION CHECK & UPDATE POPUP MECHANISM ---
 async function checkAppVersion() {
-  const currentVersion = "1.15"; // Aapke app ka current version
+  const currentVersion = "1.16"; // Aapke app ka current version
   try {
     if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
       const dbRef = firebase.firestore();
