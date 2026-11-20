@@ -6593,7 +6593,7 @@ async function triggerRemoteShopStatusPush(shopStatus, title, message) {
 }
 // --- APP VERSION CHECK & UPDATE POPUP MECHANISM ---
 async function checkAppVersion() {
-  const currentVersion = "1.17"; // Aapke app ka current version
+  const currentVersion = "1.18"; // Aapke app ka current version
   try {
     if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
       const dbRef = firebase.firestore();
