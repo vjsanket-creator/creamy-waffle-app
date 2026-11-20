@@ -19,6 +19,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
 
   <style>
     :root {
@@ -2092,8 +2093,8 @@ body.shop-is-closed .btn-submit[onclick*="confirmAndPlaceOrder"] {
   justify-content: flex-end;
 }
 /* Netlify badge ko completely remove aur hide karne ke liye */
-  iframe#netlify-badge, 
-  .netlify-deploy-badge, 
+  iframe#netlify-badge,
+  .netlify-deploy-badge,
   a[href*="netlify.com/from"],
   body > a:has(img[alt*="Netlify"]) {
     display: none !important;
@@ -2103,7 +2104,77 @@ body.shop-is-closed .btn-submit[onclick*="confirmAndPlaceOrder"] {
     position: absolute !important;
     top: -9999px !important;
   }
-  </style>
+
+  /* Jab body par .is-admin-user na ho (Customer account), tab Shop Open/Close controls hide rakhein */
+  body:not(.is-admin-user) #adminShopStatusControls,
+  body:not(.is-admin-user) .shop-status-switch-group,
+  body:not(.is-admin-user) #btnShopOpen,
+  body:not(.is-admin-user) #btnShopClose {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  /* Jab body par .is-admin-user ho (Admin account), tab controls dikhein */
+  body.is-admin-user #adminShopStatusControls,
+  body.is-admin-user .shop-status-switch-group {
+    display: inline-flex !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  .shop-closed-banner.is-open-banner {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important;
+  border-color: #22c55e !important;
+  color: #14532d !important;
+}
+
+.shop-closed-banner.is-closed-banner {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%) !important;
+  border-color: #ef4444 !important;
+  color: #7f1d1d !important;
+}
+
+/* Shop Close hone par customer/ordering controls disable karne ke liye */
+body.shop-is-closed .popsi-checkbox,
+body.shop-is-closed .checkout-action-btn,
+body.shop-is-closed .btn-submit[onclick*="confirmAndPlaceOrder"],
+body.shop-is-closed #popsiMenuOverlay .popsi-bottom-action-bar button,
+body.shop-is-closed button[onclick*="addToCart"],
+body.shop-is-closed button[onclick*="placeOrder"],
+body.shop-is-closed button[onclick*="openCheckout"] {
+  opacity: 0.45 !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}
+
+/* Admin ke Shop Open / Shop Close buttons hamesha clickable rahein */
+body.shop-is-closed #adminShopStatusControls,
+body.shop-is-closed #adminShopStatusControls * {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Jab body par .is-admin-user na ho (Customer account), tab Shop Open/Close controls hide rakhein */
+body:not(.is-admin-user) #adminShopStatusControls,
+body:not(.is-admin-user) .shop-status-switch-group,
+body:not(.is-admin-user) #btnShopOpen,
+body:not(.is-admin-user) #btnShopClose {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Jab body par .is-admin-user ho (Admin account), tab controls dikhein */
+body.is-admin-user #adminShopStatusControls,
+body.is-admin-user .shop-status-switch-group {
+  display: inline-flex !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+  
+</style>
 </head>
 <body>
   <audio id="orderNotificationSound" src="bell.mp3" preload="auto"></audio>
@@ -2298,8 +2369,8 @@ body.shop-is-closed .btn-submit[onclick*="confirmAndPlaceOrder"] {
     </div>
 
     <!-- SEARCH SECTION -->
-     <div class="shop-closed-banner" id="shopClosedBanner">
-      <span>🔒 <b>Shop is Currently Closed!</b> Ordering is temporarily disabled.</span>
+    <div class="shop-closed-banner" id="shopClosedBanner" style="display:none;">
+      <span id="shopStatusBannerText">🔒 Shop is Currently Closed! Ordering is temporarily disabled.</span>
     </div>
 
     <div class="search-section">
@@ -3971,7 +4042,121 @@ function showOrderAlertPopup(orderData) {
     if (customerOrdersOverlay.classList.contains('active')) renderCustomerOrders();
     if (adminSalesOverlay.classList.contains('active')) renderAdminSales();
   });
+// Real-time listener for customer Shop Open / Shop Close notifications
+let isInitialShopNotifLoad = true;
+let lastNotifiedShopStatus = null;
 
+function showCustomerShopAlertPopup(title, message, isOpenNow) {
+  const existing = document.getElementById('customerShopStatusPopup');
+  if (existing) existing.remove();
+
+  const popup = document.createElement('div');
+  popup.id = 'customerShopStatusPopup';
+  popup.style.cssText = [
+    'position: fixed;',
+    'top: 18px;',
+    'left: 50%;',
+    'transform: translateX(-50%);',
+    'width: 90%;',
+    'max-width: 390px;',
+    'background: ' + (isOpenNow ? '#f0fdf4' : '#fef2f2') + ';',
+    'color: ' + (isOpenNow ? '#14532d' : '#7f1d1d') + ';',
+    'border: 2px solid ' + (isOpenNow ? '#22c55e' : '#ef4444') + ';',
+    'border-radius: 16px;',
+    'padding: 14px 16px;',
+    'box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);',
+    'z-index: 999999;'
+  ].join(' ');
+
+  popup.innerHTML = [
+    '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">',
+      '<div>',
+        '<div style="font-size:15px; font-weight:900; margin-bottom:4px;">' + title + '</div>',
+        '<div style="font-size:13px; font-weight:700; line-height:1.35;">' + message + '</div>',
+      '</div>',
+      '<button type="button" onclick="this.closest(\'#customerShopStatusPopup\').remove()" style="background:none; border:none; font-size:16px; font-weight:900; cursor:pointer; color:inherit;">X</button>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(popup);
+
+  setTimeout(function () {
+    const el = document.getElementById('customerShopStatusPopup');
+    if (el) el.remove();
+  }, 8000);
+}
+
+function triggerSystemShopNotification(title, message) {
+  try {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, { body: message });
+    }
+  } catch (err) {
+    console.log('System notification error:', err);
+  }
+}
+
+if (typeof db !== 'undefined' && db && typeof db.collection === 'function') {
+  db.collection('customer_notifications')
+    .orderBy('createdAt', 'desc')
+    .limit(1)
+    .onSnapshot(function (snapshot) {
+      if (isInitialShopNotifLoad) {
+        isInitialShopNotifLoad = false;
+        snapshot.docChanges().forEach(function (change) {
+          if (change.type === 'added') {
+            const d = change.doc.data() || {};
+            lastNotifiedShopStatus = d.shopStatus || null;
+          }
+        });
+        return;
+      }
+
+      snapshot.docChanges().forEach(function (change) {
+        if (change.type === 'added') {
+          const d = change.doc.data() || {};
+          if (d.targetRole && d.targetRole !== 'customer') return;
+
+          const isNowOpen = d.shopStatus === 'open';
+          const title = d.title || (isNowOpen ? 'Creamy Waffle - Shop is Open!' : 'Creamy Waffle - Shop is Closed');
+          const message = d.message || (isNowOpen ? 'Now Shop is Open! You can start ordering.' : 'Now Shop is Closed! Ordering is temporarily disabled.');
+
+          try {
+            const existingNotifs = JSON.parse(localStorage.getItem('customer_shop_notifications') || '[]');
+            const alreadySaved = existingNotifs.some(function (n) { return n.id === d.id; });
+            if (!alreadySaved) {
+              existingNotifs.unshift({
+                id: d.id || ('shop_status_' + Date.now()),
+                title: title,
+                message: message,
+                body: message,
+                targetRole: 'customer',
+                shopStatus: isNowOpen ? 'open' : 'closed',
+                createdAt: d.createdAt || new Date().toISOString(),
+                read: false
+              });
+              localStorage.setItem('customer_shop_notifications', JSON.stringify(existingNotifs.slice(0, 50)));
+            }
+          } catch (e) {
+            console.log('Save incoming customer notif error:', e);
+          }
+
+          const isCustomerAccount = Boolean(currentUser && currentUser.role !== 'admin');
+          if (isCustomerAccount || !currentUser) {
+            showCustomerShopAlertPopup(title, message, isNowOpen);
+            triggerSystemShopNotification(title, message);
+            if (typeof applyShopStatusUI === 'function') {
+              isShopOpen = isNowOpen;
+              localStorage.setItem('paras_shop_open', JSON.stringify(isShopOpen));
+              applyShopStatusUI();
+            }
+          }
+        }
+      });
+    }, function (err) {
+      console.log('customer_notifications listener error:', err);
+    });
+}
   db.collection("users").onSnapshot((snapshot) => {
     let cloudUsers = [];
     snapshot.forEach((doc) => {
@@ -4395,7 +4580,7 @@ function showOrderAlertPopup(orderData) {
     if (currentUser) {
       authOverlay.classList.add('hidden');
       document.getElementById('greetingUserSub').textContent = `Hello, ${currentUser.name} (${currentUser.role === 'admin' ? '👑 Admin' : 'Customer'})`;
-      
+
       const isAdmin = currentUser.role === 'admin';
       document.getElementById('editShopTitleBtn').style.display = isAdmin ? 'flex' : 'none';
       document.getElementById('adminSalesBtn').style.display = isAdmin ? 'flex' : 'none';
@@ -4407,11 +4592,17 @@ function showOrderAlertPopup(orderData) {
       document.getElementById('addProductBtn').style.display = isAdmin ? 'inline-block' : 'none';
       document.getElementById('adminBgControls').style.display = isAdmin ? 'flex' : 'none';
 
+      applyShopStatusUI();
       loadPaymentQrCode();
       loadProfilePhoto();
       renderCategories();
       renderProducts();
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().catch(function () {});
+      }
     } else {
+      document.body.classList.remove('is-admin-user');
+      applyShopStatusUI();
       authOverlay.classList.remove('hidden');
     }
   }
@@ -4934,86 +5125,202 @@ function showOrderAlertPopup(orderData) {
     isShopOpen = true;
   }
 
-  function setShopStatus(openState) {
-    if (!currentUser || currentUser.role !== 'admin') {
-      alert("Only Admin can change Shop Open / Close status!");
-      return;
-    }
-    isShopOpen = Boolean(openState);
-    localStorage.setItem('paras_shop_open', JSON.stringify(isShopOpen));
-    if (typeof renderDynamicFullMenu === 'function') {
-      renderDynamicFullMenu();
-    }
-    applyShopStatusUI();
-    syncMenuToCloud();
-    alert(isShopOpen ? "🟢 Shop is now OPEN! Customers can place orders." : "🔴 Shop is now CLOSED! Customer ordering options are disabled.");
+ function pushCustomerShopNotification(isOpenNow) {
+  const title = isOpenNow ? 'Creamy Waffle - Shop is Open!' : 'Creamy Waffle - Shop is Closed';
+  const message = isOpenNow
+    ? 'Now Shop is Open! You can start ordering.'
+    : 'Now Shop is Closed! Ordering is temporarily disabled.';
+  const notifObj = {
+    id: 'shop_status_' + Date.now(),
+    title: title,
+    message: message,
+    body: message,
+    targetRole: 'customer',
+    shopStatus: isOpenNow ? 'open' : 'closed',
+    createdAt: new Date().toISOString(),
+    read: false
+  };
+
+  // Local customer notifications list mein save karein
+  try {
+    const existingNotifs = JSON.parse(localStorage.getItem('customer_shop_notifications') || '[]');
+    existingNotifs.unshift(notifObj);
+    localStorage.setItem('customer_shop_notifications', JSON.stringify(existingNotifs.slice(0, 50)));
+  } catch (e) {
+    console.warn('Local notification save warning:', e);
   }
 
-  function applyShopStatusUI() {
-    const isAdmin = currentUser && currentUser.role === 'admin';
-    const adminControls = document.getElementById('adminShopStatusControls');
-    const openBtn = document.getElementById('btnShopOpen');
-    const closeBtn = document.getElementById('btnShopClose');
-    const closedBanner = document.getElementById('shopClosedBanner');
-    const maidaBadge = document.querySelector('.no-maida-badge-text');
-    const maidaShopRow = document.getElementById('maidaShopRow');
+  // Agar app mein koi existing notification push/render function maujood hai toh call karein
+  if (typeof addNotification === 'function') {
+    try { addNotification(title, message, 'customer'); } catch (e) {}
+  }
+  if (typeof renderNotifications === 'function') {
+    try { renderNotifications(); } catch (e) {}
+  }
 
-    if (maidaBadge && maidaShopRow && maidaBadge.parentElement !== maidaShopRow) {
-      maidaShopRow.insertBefore(maidaBadge, maidaShopRow.firstChild);
+  // Agar Firestore db available hai toh customer_notifications collection mein bhejein
+  try {
+    if (typeof db !== 'undefined' && db && typeof db.collection === 'function') {
+      db.collection('customer_notifications').add(notifObj).catch(function () {});
     }
-const locationSub = document.querySelector('.shop-location-sub');
-    if (locationSub && maidaShopRow) {
-      let wrap = document.getElementById('locationMaidaInlineWrap');
-      if (!wrap) {
-        wrap = document.createElement('div');
-        wrap.id = 'locationMaidaInlineWrap';
-        locationSub.parentNode.insertBefore(wrap, locationSub);
-        wrap.appendChild(locationSub);
-        wrap.appendChild(maidaShopRow);
+  } catch (e) {}
+
+  // Browser Web Notification (agar permission granted ho)
+  try {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, { body: message });
+    }
+  } catch (e) {}
+}
+
+function setShopStatus(openState) {
+  const isAdminUser = Boolean(currentUser && currentUser.role === 'admin');
+  if (!isAdminUser) {
+    alert('Only Admin can change Shop Open / Close status!');
+    return;
+  }
+
+  isShopOpen = Boolean(openState);
+  localStorage.setItem('paras_shop_open', JSON.stringify(isShopOpen));
+
+  if (typeof renderDynamicFullMenu === 'function') {
+    renderDynamicFullMenu();
+  }
+
+  applyShopStatusUI();
+  pushCustomerShopNotification(isShopOpen);
+
+  if (typeof syncMenuToCloud === 'function') {
+    syncMenuToCloud();
+  }
+
+  alert(
+    isShopOpen
+      ? 'Shop is now OPEN! Customer notification sent: Now Shop is Open! You can start ordering.'
+      : 'Shop is now CLOSED! Customer notification sent: Now Shop is Closed! Ordering is temporarily disabled.'
+  );
+}
+
+function applyShopStatusUI() {
+  const currentRole = String((currentUser && currentUser.role) || '').trim().toLowerCase();
+  const isAdmin = currentRole === 'admin';
+  document.body.classList.toggle('is-admin-user', isAdmin);
+  const adminControls = document.getElementById('adminShopStatusControls');
+  const openBtn = document.getElementById('btnShopOpen');
+  const closeBtn = document.getElementById('btnShopClose');
+  const closedBanner = document.getElementById('shopClosedBanner');
+  const bannerTextEl = document.getElementById('shopStatusBannerText');
+  const maidaBadge = document.querySelector('.no-maida-badge-text');
+  const maidaShopRow = document.getElementById('maidaShopRow');
+
+  if (maidaBadge && maidaShopRow && maidaBadge.parentElement !== maidaShopRow) {
+    maidaShopRow.insertBefore(maidaBadge, maidaShopRow.firstChild);
+  }
+
+  const locationSub = document.querySelector('.shop-location-sub');
+  if (locationSub && maidaShopRow) {
+    let wrap = document.getElementById('locationMaidaInlineWrap');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = 'locationMaidaInlineWrap';
+      locationSub.parentNode.insertBefore(wrap, locationSub);
+      wrap.appendChild(locationSub);
+      wrap.appendChild(maidaShopRow);
+    }
+  }
+if (adminControls) {
+    adminControls.style.display = isAdmin ? 'inline-flex' : 'none';
+  }
+  if (openBtn) {
+    openBtn.style.display = isAdmin ? '' : 'none';
+    openBtn.classList.toggle('active', isShopOpen === true);
+  }
+  if (closeBtn) {
+    closeBtn.style.display = isAdmin ? '' : 'none';
+    closeBtn.classList.toggle('active', isShopOpen === false);
+  }
+  const isShopClosed = !isShopOpen;
+  const shouldBlockCustomer = isShopClosed && !isAdmin;
+
+  // Agar aap Admin view mein bhi Shop Close ka disabled state test karna chahte hain,
+  // toh neeche wali line mein `shouldBlockDisable` ko `isShopClosed` rakhein;
+  // sirf customer ke liye chahiye toh `shouldBlockCustomer` rakhein:
+  const shouldBlockDisable = isShopClosed;
+
+  document.body.classList.toggle('shop-is-closed', shouldBlockDisable);
+
+  if (closedBanner) {
+    if (isAdmin) {
+      closedBanner.style.display = 'none';
+      closedBanner.classList.remove('is-open-banner', 'is-closed-banner');
+    } else {
+      closedBanner.style.display = 'flex';
+      if (isShopClosed) {
+        closedBanner.classList.add('is-closed-banner');
+        closedBanner.classList.remove('is-open-banner');
+        if (bannerTextEl) {
+          bannerTextEl.textContent = '🔒 Shop is Currently Closed! Ordering is temporarily disabled.';
+        }
+      } else {
+        closedBanner.classList.add('is-open-banner');
+        closedBanner.classList.remove('is-closed-banner');
+        if (bannerTextEl) {
+          bannerTextEl.textContent = '🟢 Shop is Open Now! You can start ordering.';
+        }
       }
     }
-    if (adminControls) {
-      adminControls.style.display = isAdmin ? 'inline-flex' : 'none';
-    }
-    if (openBtn && closeBtn) {
-      openBtn.classList.toggle('active', isShopOpen === true);
-      closeBtn.classList.toggle('active', isShopOpen === false);
-    }
-
-    // Shop Close hone par items & ordering options disabled dikhayein
-    const isShopClosed = !isShopOpen;
-    document.body.classList.toggle('shop-is-closed', isShopClosed);
-
-    if (closedBanner) {
-      closedBanner.style.display = isShopClosed ? 'flex' : 'none';
-    }
-
-    // Menu checkboxes & buttons disable/enable karein
-    document.querySelectorAll('.popsi-checkbox').forEach(chk => {
-      const rowOutOfStock = chk.closest('.popsi-item-row')?.classList.contains('out-of-stock');
-      chk.disabled = isShopClosed || Boolean(rowOutOfStock);
-      if (isShopClosed) chk.checked = false;
-    });
-
-    if (typeof updatePopsiSelectedCount === 'function') {
-      updatePopsiSelectedCount();
-    }
-
-    const addSelectedBtn = document.querySelector('#popsiMenuOverlay .popsi-bottom-action-bar button');
-    if (addSelectedBtn) {
-      addSelectedBtn.disabled = isShopClosed;
-    }
-
-    const checkoutBtn = document.querySelector('.checkout-action-btn');
-    if (checkoutBtn) {
-      checkoutBtn.disabled = isShopClosed;
-    }
-
-    const confirmOrderBtn = document.querySelector('.btn-submit[onclick*="confirmAndPlaceOrder"]');
-    if (confirmOrderBtn) {
-      confirmOrderBtn.disabled = isShopClosed;
-    }
   }
+
+  // Menu checkboxes disable/enable karein
+  document.querySelectorAll('.popsi-checkbox').forEach(function (chk) {
+    const rowOutOfStock = chk.closest('.popsi-item-row') && chk.closest('.popsi-item-row').classList.contains('out-of-stock');
+    chk.disabled = shouldBlockDisable || Boolean(rowOutOfStock);
+    if (shouldBlockDisable) chk.checked = false;
+  });
+
+  if (typeof updatePopsiSelectedCount === 'function') {
+    updatePopsiSelectedCount();
+  }
+
+  // Ordering & checkout buttons disable/enable karein
+  const disableSelectors = [
+    '#popsiMenuOverlay .popsi-bottom-action-bar button',
+    '.checkout-action-btn',
+    '.btn-submit[onclick*="confirmAndPlaceOrder"]',
+    'button[onclick*="addToCart"]',
+    'button[onclick*="placeOrder"]',
+    'button[onclick*="openCheckout"]'
+  ];
+
+  document.querySelectorAll(disableSelectors.join(',')).forEach(function (btn) {
+    if (btn.closest('#adminShopStatusControls')) return;
+    btn.disabled = shouldBlockDisable;
+  });
+
+  // Open Shop & Close Shop buttons sirf Admin account mein dikhenge
+  if (adminControls) {
+    adminControls.style.display = isAdmin ? 'inline-flex' : 'none';
+  }
+  if (openBtn) {
+    openBtn.style.display = isAdmin ? '' : 'none';
+    openBtn.classList.toggle('active', isShopOpen === true);
+  }
+  if (closeBtn) {
+    closeBtn.style.display = isAdmin ? '' : 'none';
+    closeBtn.classList.toggle('active', isShopOpen === false);
+  }
+
+  // Menu checkboxes & buttons sirf customer shop-closed state mein disable honge
+  const checkoutBtn = document.querySelector('.checkout-action-btn');
+  if (checkoutBtn) {
+    checkoutBtn.disabled = shouldBlockDisable;
+  }
+
+  const confirmOrderBtn = document.querySelector('.btn-submit[onclick*="confirmAndPlaceOrder"]');
+  if (confirmOrderBtn) {
+    confirmOrderBtn.disabled = shouldBlockDisable;
+  }
+}
 
   function renderProducts(filterText = '') {
     const cardsCarousel = document.getElementById('cardsCarousel');
@@ -6222,9 +6529,49 @@ checkAuthState();
 applyShopStatusUI();
 checkAppVersion();
 
+// Background Push Notification Registration (Customer Devices)
+const FCM_VAPID_KEY = 'BN9PhuDWJVm0_L-SMbvdYfdv27PC1m7ktg630WSR42-DuaIdHqLeACIhLkbSc_0L2Eu7AFziGdcONt2lXJ07cAU';
+
+async function registerCustomerBackgroundPush() {
+  try {
+    if (!('serviceWorker' in navigator) || !('Notification' in window)) return;
+    if (!firebase.messaging || !firebase.messaging.isSupported()) return;
+
+    const isCustomer = Boolean(currentUser && currentUser.role !== 'admin');
+    if (!isCustomer) return;
+
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+
+    const swRegistration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+    const messaging = firebase.messaging();
+
+    const token = await messaging.getToken({
+      vapidKey: FCM_VAPID_KEY,
+      serviceWorkerRegistration: swRegistration
+    });
+
+    if (token && typeof db !== 'undefined') {
+      const userKey = String(currentUser.username || currentUser.phone || currentUser.email || token).replace(/[\/\\?%*:|"<>]/g, '_');
+      await db.collection('customer_push_tokens').doc(token).set({
+        token: token,
+        userKey: userKey,
+        customerName: currentUser.name || 'Customer',
+        role: 'customer',
+        updatedAt: Date.now()
+      }, { merge: true });
+    }
+  } catch (err) {
+    console.log('FCM background push setup:', err);
+  }
+}
+
+window.addEventListener('load', function () {
+  setTimeout(registerCustomerBackgroundPush, 2000);
+});
 // --- APP VERSION CHECK & UPDATE POPUP MECHANISM ---
 async function checkAppVersion() {
-  const currentVersion = "1.16"; // Aapke app ka current version
+  const currentVersion = "1.17"; // Aapke app ka current version
   try {
     if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
       const dbRef = firebase.firestore();
