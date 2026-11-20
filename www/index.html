@@ -5164,6 +5164,7 @@ if (typeof db !== 'undefined' && db && typeof db.collection === 'function') {
       db.collection('customer_notifications').add(notifObj).catch(function () {});
     }
   } catch (e) {}
+  triggerRemoteShopStatusPush(isOpenNow ? "open" : "closed", title, message);
 
   // Browser Web Notification (agar permission granted ho)
   try {
@@ -6569,6 +6570,27 @@ async function registerCustomerBackgroundPush() {
 window.addEventListener('load', function () {
   setTimeout(registerCustomerBackgroundPush, 2000);
 });
+
+window.CREAMY_WAFFLE_PUSH_URL = "https://creamy-waffle-app-lz6n.vercel.app";
+
+async function triggerRemoteShopStatusPush(shopStatus, title, message) {
+  try {
+    const baseUrl = window.CREAMY_WAFFLE_PUSH_URL || "";
+    if (!baseUrl) return;
+
+    await fetch(`${baseUrl.replace(/\/$/, "")}/api/send-shop-push`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        shopStatus: shopStatus,
+        title: title,
+        message: message
+      })
+    });
+  } catch (err) {
+    console.log("Remote push call skipped:", err);
+  }
+}
 // --- APP VERSION CHECK & UPDATE POPUP MECHANISM ---
 async function checkAppVersion() {
   const currentVersion = "1.17"; // Aapke app ka current version
